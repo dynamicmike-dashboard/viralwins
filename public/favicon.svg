@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="iconBgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#4f46e5" />
+      <stop offset="50%" stop-color="#6366f1" />
+      <stop offset="100%" stop-color="#8b5cf6" />
+    </linearGradient>
+    <linearGradient id="trophyGold" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fef08a" />
+      <stop offset="50%" stop-color="#f59e0b" />
+      <stop offset="100%" stop-color="#d97706" />
+    </linearGradient>
+    <filter id="subtleDrop" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="8" stdDeviation="16" flood-color="#312e81" flood-opacity="0.35" />
+    </filter>
+  </defs>
+
+  <!-- High-Def Rounded App Icon Base -->
+  <rect width="512" height="512" rx="120" fill="url(#iconBgGrad)" />
+  
+  <!-- Subtle Internal Highlight Stroke -->
+  <rect x="8" y="8" width="496" height="496" rx="112" fill="none" stroke="#ffffff" stroke-width="4" stroke-opacity="0.3" />
+
+  <!-- Center Trophy Emblem -->
+  <g transform="translate(106, 96)" filter="url(#subtleDrop)">
+    <!-- Trophy Cup Base & Handles -->
+    <path d="M70 70 L230 70 C230 160 190 200 150 210 C110 200 70 160 70 70 Z" fill="#ffffff" />
+    <path d="M70 85 C40 85 25 110 25 140 C25 170 45 185 70 185" fill="none" stroke="#ffffff" stroke-width="16" stroke-linecap="round" />
+    <path d="M230 85 C260 85 275 110 275 140 C275 170 255 185 230 185" fill="none" stroke="#ffffff" stroke-width="16" stroke-linecap="round" />
+
+    <!-- Stem and Stand -->
+    <rect x="138" y="210" width="24" height="45" rx="6" fill="#ffffff" />
+    <rect x="95" y="255" width="110" height="25" rx="10" fill="#ffffff" />
+
+    <!-- Inner Golden Star / Sparkle -->
+    <polygon points="150,90 158,122 190,130 158,138 150,170 142,138 110,130 142,122" fill="url(#trophyGold)" />
+    
+    <!-- Floating Reward Sparkles -->
+    <circle cx="50" cy="50" r="10" fill="#fde047" />
+    <circle cx="250" cy="55" r="12" fill="#38bdf8" />
+  </g>
+</svg>

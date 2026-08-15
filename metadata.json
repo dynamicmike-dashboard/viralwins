@@ -1,0 +1,6 @@
+{
+  "name": "Viral Referral Engine & Sweepstakes Studio",
+  "description": "Multi-tenant viral referral marketing and sweepstakes platform with agency campaign customizer, gamified participant hub, fairness draw engine, and Teable integration schema.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

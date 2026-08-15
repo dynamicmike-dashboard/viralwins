@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en" class="light">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <title>Viral Referral Engine & Sweepstakes Studio</title>
+    <meta name="description" content="Next-Gen Gamified Viral Referral Engine & Live Sweepstakes PWA with real-time fair draw cryptography." />
+    
+    <!-- PWA Primary Color & Theme Configuration -->
+    <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#4f46e5" />
+    <meta name="application-name" content="ViralEngine" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    
+    <!-- Apple iOS PWA Web App Meta Tags -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="ViralEngine" />
+    <link rel="apple-touch-icon" href="/icon-192.svg" />
+    <link rel="apple-touch-icon" sizes="192x192" href="/icon-192.svg" />
+    <link rel="apple-touch-icon" sizes="512x512" href="/icon-512.svg" />
+    <meta name="format-detection" content="telephone=no" />
+
+    <!-- Favicon & Manifest -->
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="alternate icon" href="/favicon.svg" />
+    <link rel="mask-icon" href="/favicon.svg" color="#4f46e5" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600;700&family=Outfit:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=Syne:wght@600;700;800&family=Playfair+Display:ital,wght@0,600;0,800;1,600&display=swap" rel="stylesheet">
+  </head>
+  <body class="bg-slate-50 text-slate-900 antialiased selection:bg-indigo-500 selection:text-white overscroll-none touch-pan-y">
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+    <script>
+      // Service Worker Registration for PWA caching & offline support
+      if ('serviceWorker' in navigator && window.location.protocol.startsWith('http')) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js').then((registration) => {
+            console.log('[PWA] ServiceWorker registered with scope:', registration.scope);
+          }).catch((err) => {
+            console.log('[PWA] ServiceWorker registration skipped:', err);
+          });
+        });
+      }
+    </script>
+  </body>
+</html>
+
