@@ -27,14 +27,45 @@ import { triggerHapticFeedback } from './utils/haptics';
 import { toPrototypeCampaign } from './utils/publicCampaign';
 import { PromoterSalesPage } from './components/Sales/PromoterSalesPage';
 
-export function App() {
+function App() {
   const [appPath] = useState(() => window.location.pathname);
   const [paidAccessLoading, setPaidAccessLoading] = useState(appPath === '/dashboard');
   const [paidAccess, setPaidAccess] = useState(false);
+
+  useEffect(() => {
+    if (appPath !== '/dashboard') return;
+    fetch('/api/access/session')
+      .then((response) => response.json())
+      .then((result) => setPaidAccess(result.authorized === true))
+      .catch(() => setPaidAccess(false))
+      .finally(() => setPaidAccessLoading(false));
+  }, [appPath]);
+
+  const requestTestAccess = async (email: string) => {
+    const response = await fetch('/api/access/test', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email }),
+    });
+    const result = await response.json();
+    if (!response.ok) throw new Error(result.error || 'Access denied');
+    window.location.href = '/dashboard';
+  };
+
+  const isSalesRoute = appPath === '/' || (appPath === '/dashboard' && !paidAccess && !paidAccessLoading);
+
+  if (isSalesRoute) {
+    return <PromoterSalesPage onTestAccess={requestTestAccess} />;
+  }
+
+  return <StudioApp defaultTab={appPath === '/dashboard' ? 'operations_analytics' : 'participant_hub'} />;
+}
+
+function StudioApp({ defaultTab }: { defaultTab: ActiveTab }) {
   const [campaigns, setCampaigns] = useState<Campaign[]>(mockCampaigns);
   const [activeCampaign, setActiveCampaign] = useState<Campaign>(mockCampaigns[0]);
-  const [activeTab, setActiveTab] = useState<ActiveTab>('participant_hub');
-  
+  const [activeTab, setActiveTab] = useState<ActiveTab>(defaultTab);
+
   // PWA Aesthetic & Lifecycle State
   const [pwaTheme, setPwaTheme] = useState<PwaThemeMode>('cyber_aurora');
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
@@ -76,30 +107,6 @@ export function App() {
       })
       .catch((error) => console.error('[campaign] load failed', error));
   }, []);
-
-  useEffect(() => {
-    if (appPath !== '/dashboard') return;
-    fetch('/api/access/session')
-      .then((response) => response.json())
-      .then((result) => setPaidAccess(result.authorized === true))
-      .catch(() => setPaidAccess(false))
-      .finally(() => setPaidAccessLoading(false));
-  }, [appPath]);
-
-  const requestTestAccess = async (email: string) => {
-    const response = await fetch('/api/access/test', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email }),
-    });
-    const result = await response.json();
-    if (!response.ok) throw new Error(result.error || 'Access denied');
-    window.location.href = '/dashboard';
-  };
-
-  if (appPath === '/' || appPath === '/dashboard' && !paidAccess && !paidAccessLoading) {
-    return <PromoterSalesPage onTestAccess={requestTestAccess} />;
-  }
 
   // Listen to PWA Install Prompt and Standalone state
   useEffect(() => {
