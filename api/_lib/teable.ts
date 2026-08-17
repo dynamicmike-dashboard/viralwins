@@ -86,78 +86,85 @@ function linkId(value: unknown): string | null {
   return null;
 }
 
-const PLAN_ENTRANT_CAPS: Record<string, number> = {
-  starter: 500,
-  growth: 2500,
-  scale: 25000,
+const DEFAULT_WARNING_PCT = 80;
+
+type CampaignCap = {
+  count: number;
+  cap: number;
+  tier: string;
+  status: string;
+  enforcement: string;
+  warningPct: number;
+  pct: number;
+  remaining: number;
+  warningMessage: string;
+  reachedMessage: string;
+  upgradeUrl: string;
 };
-const DEFAULT_PLAN_TIER = 'starter';
-const WARN_ENTRANT_PCT = 0.8;
-const PERIOD_MS = 30 * 24 * 60 * 60 * 1000;
 
-function planEntrantCap(fields: Record<string, unknown>): number {
-  const override = numberField(fields, 'Entrant_Cap');
-  if (override > 0) return override;
-  const tier = String(fields.Plan_Tier ?? '').toLowerCase();
-  return PLAN_ENTRANT_CAPS[tier] ?? PLAN_ENTRANT_CAPS[DEFAULT_PLAN_TIER];
-}
-
-function planTier(fields: Record<string, unknown>): string {
-  const tier = String(fields.Plan_Tier ?? '').toLowerCase();
-  return tier in PLAN_ENTRANT_CAPS ? tier : DEFAULT_PLAN_TIER;
+function campaignCap(fields: Record<string, unknown>): CampaignCap {
+  const count = numberField(fields, 'Total_Subscribers');
+  const cap = numberField(fields, 'Entrant_Cap');
+  const status = stringField(fields, 'Entrant_Cap_Status') || 'Unlimited';
+  const enforcement = stringField(fields, 'Cap_Enforcement') || 'Off';
+  return {
+    count,
+    cap,
+    tier: stringField(fields, 'Plan_Tier') || 'Starter',
+    status,
+    enforcement,
+    warningPct: numberField(fields, 'Cap_Warning_Pct') || DEFAULT_WARNING_PCT,
+    pct: numberField(fields, 'Entrant_Usage_Pct'),
+    remaining: numberField(fields, 'Entrants_Remaining'),
+    warningMessage: stringField(fields, 'Cap_Warning_Message'),
+    reachedMessage: stringField(fields, 'Cap_Reached_Message'),
+    upgradeUrl: stringField(fields, 'Upgrade_URL'),
+  };
 }
 
 type CampaignUsage = {
   count: number;
   cap: number;
   tier: string;
+  status: string;
+  enforcement: string;
   pct: number;
+  remaining: number;
+  warningPct: number;
   resetsAt: string | null;
+  upgradeUrl: string;
+  warningMessage: string;
+  reachedMessage: string;
 };
 
-function pageKeyNow(): number {
-  return Date.now();
-}
-
-function usageFromCounter(fields: Record<string, unknown>): CampaignUsage {
-  const cap = planEntrantCap(fields);
-  const periodStart = numberField(fields, 'Entrant_Period_Start');
-  const monthStart = periodStart > 0 ? periodStart : pageKeyNow() - PERIOD_MS;
-  const resetsAt = monthStart + PERIOD_MS;
-  const inPeriod = pageKeyNow() > resetsAt ? 0 : numberField(fields, 'Current_Entrants');
-  const effectiveCount = Math.max(0, inPeriod);
-  const pct = cap > 0 ? effectiveCount / cap : 0;
+function toUsage(cap: CampaignCap): CampaignUsage {
   return {
-    count: effectiveCount,
-    cap,
-    tier: planTier(fields),
-    pct: Math.round(pct * 1000) / 1000,
-    resetsAt: new Date(resetsAt).toISOString(),
+    count: cap.count,
+    cap: cap.cap,
+    tier: cap.tier,
+    status: cap.status,
+    enforcement: cap.enforcement,
+    pct: cap.cap > 0 ? cap.pct : 0,
+    remaining: cap.cap > 0 ? cap.remaining : -1,
+    warningPct: cap.warningPct,
+    resetsAt: null,
+    upgradeUrl: cap.upgradeUrl,
+    warningMessage: cap.warningMessage,
+    reachedMessage: cap.reachedMessage,
   };
 }
 
-/** Authoritative entrant count for a campaign within the current period. */
+/** Authoritative entrant usage for a campaign from the computed Teable rollup. */
 export async function getCampaignUsage(slug: string): Promise<CampaignUsage | null> {
   const campaignRecords = await readAll('Viral Referral Engine');
   const campaign = campaignRecords.find((item) => stringField(item.fields, 'Public_Slug') === slug);
   if (!campaign) return null;
-  return usageFromCounter(campaign.fields);
+  return toUsage(campaignCap(campaign.fields));
 }
 
-async function updateCampaignCounter(campaignId: string, count: number, periodStart: number): Promise<void> {
-  const tableId = await getTableId('Viral Referral Engine');
-  await request<{ records?: TeableRecord[] }>(`/table/${tableId}/record`, {
-    method: 'PATCH',
-    body: JSON.stringify({
-      records: [{
-        id: campaignId,
-        fields: {
-          Current_Entrants: count,
-          Entrant_Period_Start: periodStart,
-        },
-      }],
-    }),
-  });
+function isHardStop(usage: CampaignCap): boolean {
+  const mode = usage.enforcement.toLowerCase().replace(/[^a-z]/g, '');
+  return mode === 'hardstop' && usage.status.toLowerCase() === 'full' && usage.cap > 0;
 }
 
 export async function joinPublicCampaign(input: {
@@ -171,7 +178,19 @@ export async function joinPublicCampaign(input: {
   if (!campaign) return { kind: 'not_found' as const };
   if (stringField(campaign.fields, 'Status').toLowerCase() !== 'active') return { kind: 'inactive' as const };
 
-  const usage = usageFromCounter(campaign.fields);
+  const cap = campaignCap(campaign.fields);
+  if (isHardStop(cap)) {
+    return {
+      kind: 'cap_reached' as const,
+      count: cap.count,
+      cap: cap.cap,
+      tier: cap.tier,
+      status: cap.status,
+      enforcement: cap.enforcement,
+      pct: cap.pct,
+      message: cap.reachedMessage || 'this campaign has reached its entrant limit',
+    };
+  }
 
   const subscribers = await readAll('Subscribers');
   const email = input.email.trim().toLowerCase();
@@ -179,14 +198,6 @@ export async function joinPublicCampaign(input: {
     linkId(item.fields.Campaign) === campaign.id && stringField(item.fields, 'Email').toLowerCase() === email,
   );
   if (duplicate) return { kind: 'duplicate' as const };
-
-  if (usage.count >= usage.cap) {
-    return {
-      kind: 'cap_reached' as const,
-      ...usage,
-      upgradeUrl: '/#pricing',
-    };
-  }
 
   const referralCode = `REF-${input.name.replace(/[^a-z0-9]/gi, '').slice(0, 8).toUpperCase() || 'USER'}-${crypto.randomUUID().slice(0, 6).toUpperCase()}`;
   const subscriberTable = await getTableId('Subscribers');
@@ -208,13 +219,7 @@ export async function joinPublicCampaign(input: {
     }),
   });
 
-  const periodStart = usage.resetsAt ? new Date(usage.resetsAt).getTime() - PERIOD_MS : pageKeyNow();
-  const nextCount = usage.count + 1;
-  try {
-    await updateCampaignCounter(campaign.id, nextCount, periodStart);
-  } catch (error) {
-    console.error('[usage] counter update failed (entrant still created):', error);
-  }
+  const approaching = cap.cap > 0 && (cap.status.toLowerCase() === 'approaching' || cap.status.toLowerCase() === 'full');
 
   return {
     kind: 'created' as const,
@@ -222,11 +227,12 @@ export async function joinPublicCampaign(input: {
     referralCode,
     referredByCode: input.referrerCode?.trim() || undefined,
     usage: {
-      count: nextCount,
-      cap: usage.cap,
-      tier: usage.tier,
-      pct: Math.round((nextCount / usage.cap) * 1000) / 1000,
-      warning: nextCount / usage.cap >= WARN_ENTRANT_PCT ? 'entrant_cap_approaching' as const : null,
+      count: cap.count,
+      cap: cap.cap,
+      tier: cap.tier,
+      status: cap.status,
+      pct: cap.pct,
+      warning: approaching ? 'entrant_cap_approaching' as const : null,
     },
   };
 }

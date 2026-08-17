@@ -36,14 +36,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (result.kind === 'duplicate') return res.status(409).json({ error: 'email already entered this campaign' });
     if (result.kind === 'cap_reached') {
       return res.status(409).json({
-        error: 'this campaign has reached its current entrant limit',
+        error: result.message || 'this campaign has reached its entrant limit',
         code: 'campaign_full',
         usage: {
           count: result.count,
           cap: result.cap,
           tier: result.tier,
+          status: result.status,
+          enforcement: result.enforcement,
           pct: result.pct,
-          upgradeUrl: result.upgradeUrl,
         },
       });
     }

@@ -29,12 +29,13 @@
 - PWA manifest, icons, legal modals, complaints modal, install flow, AI Studio customizer, analytics prototype, and draw preview.
 - Bright vibrant brand sales page with benefits-led copy and 3-tier pricing (Starter $18/mo annual, Growth $24/mo up to 2,500 entrants, Scale $36/mo annual or $42/mo up to 25,000; contact note for more).
 - Gateway: `/dashboard` renders correctly (split gate routing from StudioApp to fix the hooks-count crash).
-- Entrant-cap mediation: `api/_lib/teable.ts` reads `Plan_Tier`/`Entrant_Cap`/`Current_Entrants`/`Entrant_Period_Start`; join blocks at 100% with `campaign_full`+upgradeUrl, returns approaching warnings at 80%; counter persisted on Teable after each join.
-- Promoter-authorized usage endpoint `GET /api/campaigns/:slug/usage` returning `{count, cap, tier, pct, resetsAt}`; shared cookie auth in `api/_lib/access.ts` (also used by session.ts).
-- `<EntrantUsageBanner>` on the promoter dashboard (green/amber/rose by pct, upgrade CTA at 75%+, locked state at 100%+).
+- Entrant-cap mediation aligned to the Teable-owned computed contract (commit `7bfef6b` on the Teable side): reads `Total_Subscribers` rollup + `Entrant_Cap`, `Cap_Enforcement`, `Entrant_Cap_Status`, `Entrant_Usage_Pct`, `Entrants_Remaining`, `Plan_Tier`; join warns at `Approaching` and hard-stops only when status is `Full` + enforcement `Hard Stop`. No mutable counter written by the server. `Upgrade_URL`, plan pricing, and plan reference stay out of public responses.
+- Promoter-authorized usage endpoint `GET /api/campaigns/:slug/usage` returning `{count, cap, tier, status, enforcement, pct, remaining, warningPct, resetsAt, upgradeUrl, warningMessage, reachedMessage}`; shared cookie auth in `api/_lib/access.ts` (also used by session.ts).
+- `<EntrantUsageBanner>` on the promoter dashboard (green/amber/rose by status, upgrade CTA when Approaching, locked state when Full + Hard Stop; hides for Unlimited/no cap).
 
 ## PENDING / NEXT
-- [ ] Require Teable fields on the `Viral Referral Engine` table: `Plan_Tier` (starter/growth/scale), `Entrant_Cap` (optional override), `Current_Entrants` (counter), `Entrant_Period_Start` (ms epoch).
+- [ ] Map a promoter plan to each campaign in Teable (`Plan_Tier` + `Entrant_Cap`) — currently only the `new leaderboard test` campaign is Growth/2,500; everything else is Unlimited by design.
+- [ ] For exact hard-stop caps, add a per-campaign server lock or atomic reservation (read-then-create can overshoot under simultaneous joins).
 - [ ] Wire Stripe checkout and webhook so the temporary `/api/access/test` cookie becomes a real entitlement; entitlements should drive `Plan_Tier`.
 - [ ] Remove all placeholder, mock, hallucinated, and sample campaign content.
 - [ ] Replace mock subscriber/action/draw state with Teable reads.
