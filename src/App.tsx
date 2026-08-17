@@ -25,8 +25,12 @@ import { PwaThemeMode } from './components/PWA/PwaThemeEngine';
 import { triggerFireworks, triggerActionReward } from './utils/confetti';
 import { triggerHapticFeedback } from './utils/haptics';
 import { toPrototypeCampaign } from './utils/publicCampaign';
+import { PromoterSalesPage } from './components/Sales/PromoterSalesPage';
 
 export function App() {
+  const [appPath] = useState(() => window.location.pathname);
+  const [paidAccessLoading, setPaidAccessLoading] = useState(appPath === '/dashboard');
+  const [paidAccess, setPaidAccess] = useState(false);
   const [campaigns, setCampaigns] = useState<Campaign[]>(mockCampaigns);
   const [activeCampaign, setActiveCampaign] = useState<Campaign>(mockCampaigns[0]);
   const [activeTab, setActiveTab] = useState<ActiveTab>('participant_hub');
@@ -72,6 +76,30 @@ export function App() {
       })
       .catch((error) => console.error('[campaign] load failed', error));
   }, []);
+
+  useEffect(() => {
+    if (appPath !== '/dashboard') return;
+    fetch('/api/access/session')
+      .then((response) => response.json())
+      .then((result) => setPaidAccess(result.authorized === true))
+      .catch(() => setPaidAccess(false))
+      .finally(() => setPaidAccessLoading(false));
+  }, [appPath]);
+
+  const requestTestAccess = async (email: string) => {
+    const response = await fetch('/api/access/test', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email }),
+    });
+    const result = await response.json();
+    if (!response.ok) throw new Error(result.error || 'Access denied');
+    window.location.href = '/dashboard';
+  };
+
+  if (appPath === '/' || appPath === '/dashboard' && !paidAccess && !paidAccessLoading) {
+    return <PromoterSalesPage onTestAccess={requestTestAccess} />;
+  }
 
   // Listen to PWA Install Prompt and Standalone state
   useEffect(() => {
