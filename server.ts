@@ -3,7 +3,7 @@ import dotenv from 'dotenv';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { GoogleGenAI, Type } from '@google/genai';
-import { completePublicAction, getPublicCampaign, joinPublicCampaign } from './api/_lib/teable.ts';
+import { completePublicAction, getPublicCampaign, joinPublicCampaign } from './api/_lib/teable';
 
 dotenv.config();
 

@@ -1,4 +1,4 @@
-import { joinPublicCampaign } from '../../_lib/teable.ts';
+import { joinPublicCampaign } from '../../_lib/teable';
 
 type VercelRequest = {
   method?: string;
