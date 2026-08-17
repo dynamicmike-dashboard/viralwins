@@ -34,6 +34,19 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (result.kind === 'not_found') return res.status(404).json({ error: 'campaign not found' });
     if (result.kind === 'inactive') return res.status(409).json({ error: 'campaign is not active' });
     if (result.kind === 'duplicate') return res.status(409).json({ error: 'email already entered this campaign' });
+    if (result.kind === 'cap_reached') {
+      return res.status(409).json({
+        error: 'this campaign has reached its current entrant limit',
+        code: 'campaign_full',
+        usage: {
+          count: result.count,
+          cap: result.cap,
+          tier: result.tier,
+          pct: result.pct,
+          upgradeUrl: result.upgradeUrl,
+        },
+      });
+    }
     return res.status(201).json(result);
   } catch (error) {
     console.error('Campaign join failed:', error);

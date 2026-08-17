@@ -26,6 +26,7 @@ import { Campaign, Subscriber, ActionLog, DrawAuditRecord } from '../../types';
 import { triggerHapticFeedback } from '../../utils/haptics';
 import { CryptographicVerifierModal } from './CryptographicVerifierModal';
 import { NotificationPreviewDrawer } from '../NotificationPreview/NotificationPreviewDrawer';
+import { EntrantUsageBanner } from './EntrantUsageBanner';
 
 interface AgencyDashboardProps {
   campaign: Campaign;
@@ -216,6 +217,8 @@ export const AgencyDashboard: React.FC<AgencyDashboardProps> = ({
       )}
 
       {/* 5-Metric Executive KPI Cards */}
+      <EntrantUsageBanner slug={campaign.slug} />
+
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
         
         {/* Total Subscribers */}

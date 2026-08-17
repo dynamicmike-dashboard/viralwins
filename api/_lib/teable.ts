@@ -86,6 +86,80 @@ function linkId(value: unknown): string | null {
   return null;
 }
 
+const PLAN_ENTRANT_CAPS: Record<string, number> = {
+  starter: 500,
+  growth: 2500,
+  scale: 25000,
+};
+const DEFAULT_PLAN_TIER = 'starter';
+const WARN_ENTRANT_PCT = 0.8;
+const PERIOD_MS = 30 * 24 * 60 * 60 * 1000;
+
+function planEntrantCap(fields: Record<string, unknown>): number {
+  const override = numberField(fields, 'Entrant_Cap');
+  if (override > 0) return override;
+  const tier = String(fields.Plan_Tier ?? '').toLowerCase();
+  return PLAN_ENTRANT_CAPS[tier] ?? PLAN_ENTRANT_CAPS[DEFAULT_PLAN_TIER];
+}
+
+function planTier(fields: Record<string, unknown>): string {
+  const tier = String(fields.Plan_Tier ?? '').toLowerCase();
+  return tier in PLAN_ENTRANT_CAPS ? tier : DEFAULT_PLAN_TIER;
+}
+
+type CampaignUsage = {
+  count: number;
+  cap: number;
+  tier: string;
+  pct: number;
+  resetsAt: string | null;
+};
+
+function pageKeyNow(): number {
+  return Date.now();
+}
+
+function usageFromCounter(fields: Record<string, unknown>): CampaignUsage {
+  const cap = planEntrantCap(fields);
+  const periodStart = numberField(fields, 'Entrant_Period_Start');
+  const monthStart = periodStart > 0 ? periodStart : pageKeyNow() - PERIOD_MS;
+  const resetsAt = monthStart + PERIOD_MS;
+  const inPeriod = pageKeyNow() > resetsAt ? 0 : numberField(fields, 'Current_Entrants');
+  const effectiveCount = Math.max(0, inPeriod);
+  const pct = cap > 0 ? effectiveCount / cap : 0;
+  return {
+    count: effectiveCount,
+    cap,
+    tier: planTier(fields),
+    pct: Math.round(pct * 1000) / 1000,
+    resetsAt: new Date(resetsAt).toISOString(),
+  };
+}
+
+/** Authoritative entrant count for a campaign within the current period. */
+export async function getCampaignUsage(slug: string): Promise<CampaignUsage | null> {
+  const campaignRecords = await readAll('Viral Referral Engine');
+  const campaign = campaignRecords.find((item) => stringField(item.fields, 'Public_Slug') === slug);
+  if (!campaign) return null;
+  return usageFromCounter(campaign.fields);
+}
+
+async function updateCampaignCounter(campaignId: string, count: number, periodStart: number): Promise<void> {
+  const tableId = await getTableId('Viral Referral Engine');
+  await request<{ records?: TeableRecord[] }>(`/table/${tableId}/record`, {
+    method: 'PATCH',
+    body: JSON.stringify({
+      records: [{
+        id: campaignId,
+        fields: {
+          Current_Entrants: count,
+          Entrant_Period_Start: periodStart,
+        },
+      }],
+    }),
+  });
+}
+
 export async function joinPublicCampaign(input: {
   slug: string;
   name: string;
@@ -97,12 +171,22 @@ export async function joinPublicCampaign(input: {
   if (!campaign) return { kind: 'not_found' as const };
   if (stringField(campaign.fields, 'Status').toLowerCase() !== 'active') return { kind: 'inactive' as const };
 
+  const usage = usageFromCounter(campaign.fields);
+
   const subscribers = await readAll('Subscribers');
   const email = input.email.trim().toLowerCase();
   const duplicate = subscribers.find((item) =>
     linkId(item.fields.Campaign) === campaign.id && stringField(item.fields, 'Email').toLowerCase() === email,
   );
   if (duplicate) return { kind: 'duplicate' as const };
+
+  if (usage.count >= usage.cap) {
+    return {
+      kind: 'cap_reached' as const,
+      ...usage,
+      upgradeUrl: '/#pricing',
+    };
+  }
 
   const referralCode = `REF-${input.name.replace(/[^a-z0-9]/gi, '').slice(0, 8).toUpperCase() || 'USER'}-${crypto.randomUUID().slice(0, 6).toUpperCase()}`;
   const subscriberTable = await getTableId('Subscribers');
@@ -124,11 +208,26 @@ export async function joinPublicCampaign(input: {
     }),
   });
 
+  const periodStart = usage.resetsAt ? new Date(usage.resetsAt).getTime() - PERIOD_MS : pageKeyNow();
+  const nextCount = usage.count + 1;
+  try {
+    await updateCampaignCounter(campaign.id, nextCount, periodStart);
+  } catch (error) {
+    console.error('[usage] counter update failed (entrant still created):', error);
+  }
+
   return {
     kind: 'created' as const,
     subscriberId: response.records?.[0]?.fields.Subscriber_ID ?? '',
     referralCode,
     referredByCode: input.referrerCode?.trim() || undefined,
+    usage: {
+      count: nextCount,
+      cap: usage.cap,
+      tier: usage.tier,
+      pct: Math.round((nextCount / usage.cap) * 1000) / 1000,
+      warning: nextCount / usage.cap >= WARN_ENTRANT_PCT ? 'entrant_cap_approaching' as const : null,
+    },
   };
 }
 
