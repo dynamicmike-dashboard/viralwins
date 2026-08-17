@@ -1,4 +1,4 @@
-import { getPublicCampaign } from '../../server/teable.ts';
+import { getPublicCampaign } from '../_lib/teable.ts';
 
 type VercelRequest = { query: Record<string, string | string[] | undefined> };
 type VercelResponse = {
