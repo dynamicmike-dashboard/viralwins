@@ -36,6 +36,7 @@ interface ParticipantDashboardProps {
   campaign: Campaign;
   subscriber: Subscriber;
   allSubscribers: Subscriber[];
+  pendingActionIds?: string[];
   onActionCompleted: (actionId: string, reward: number) => void;
   onOpenRules: () => void;
 }
@@ -44,6 +45,7 @@ export const ParticipantDashboard: React.FC<ParticipantDashboardProps> = ({
   campaign,
   subscriber,
   allSubscribers,
+  pendingActionIds = [],
   onActionCompleted,
   onOpenRules
 }) => {
@@ -380,11 +382,12 @@ export const ParticipantDashboard: React.FC<ParticipantDashboardProps> = ({
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {campaign.actions.map((action) => {
             const isCompleted = subscriber.completedActionIds.includes(action.id);
+            const isPending = pendingActionIds.includes(action.id);
             return (
               <div
                 key={action.id}
                 className={`rounded-2xl border p-4 sm:p-5 flex items-center justify-between gap-4 transition duration-200 ${
-                  isCompleted
+                  isCompleted || isPending
                     ? "bg-slate-50/80 border-slate-200 opacity-70"
                     : "bg-white border-slate-200/90 hover:border-indigo-300 hover:shadow-lg shadow-xs"
                 }`}
@@ -414,13 +417,13 @@ export const ParticipantDashboard: React.FC<ParticipantDashboardProps> = ({
 
                 <button
                   onClick={() => {
-                    if (!isCompleted) {
+                    if (!isCompleted && !isPending) {
                       setActiveActionModal(action);
                     }
                   }}
-                  disabled={isCompleted}
+                  disabled={isCompleted || isPending}
                   className={`shrink-0 text-xs font-bold px-3.5 py-2 rounded-xl flex items-center gap-1.5 transition ${
-                    isCompleted
+                    isCompleted || isPending
                       ? "bg-emerald-100 text-emerald-800 border border-emerald-200 cursor-default"
                       : "bg-indigo-50 hover:bg-indigo-600 text-indigo-700 hover:text-white border border-indigo-200 active:scale-95 shadow-2xs"
                   }`}
@@ -428,6 +431,10 @@ export const ParticipantDashboard: React.FC<ParticipantDashboardProps> = ({
                   {isCompleted ? (
                     <>
                       <CheckCircle2 className="w-3.5 h-3.5" /> Done
+                    </>
+                  ) : isPending ? (
+                    <>
+                      <Clock className="w-3.5 h-3.5" /> Pending review
                     </>
                   ) : (
                     <>+{action.reward} {rewardLabel}</>

@@ -24,6 +24,7 @@ import { PwaBottomNav } from './components/PWA/PwaBottomNav';
 import { PwaThemeMode } from './components/PWA/PwaThemeEngine';
 import { triggerFireworks, triggerActionReward } from './utils/confetti';
 import { triggerHapticFeedback } from './utils/haptics';
+import { toPrototypeCampaign } from './utils/publicCampaign';
 
 export function App() {
   const [campaigns, setCampaigns] = useState<Campaign[]>(mockCampaigns);
@@ -41,6 +42,7 @@ export function App() {
   const [subscribers, setSubscribers] = useState<Subscriber[]>(mockSubscribers);
   const [currentParticipant, setCurrentParticipant] = useState<Subscriber>(mockSubscribers[0]);
   const [actionLogs, setActionLogs] = useState<ActionLog[]>(mockActionLogs);
+  const [pendingActionIds, setPendingActionIds] = useState<string[]>([]);
   const [previousDraws, setPreviousDraws] = useState<DrawAuditRecord[]>(mockPreviousDraws);
 
   // Global Legal & Compliance Modals
@@ -49,6 +51,27 @@ export function App() {
   const [showPrivacyModal, setShowPrivacyModal] = useState(false);
   const [showTermsModal, setShowTermsModal] = useState(false);
   const [showComplaintsModal, setShowComplaintsModal] = useState(false);
+  const [isLiveCampaign, setIsLiveCampaign] = useState(false);
+
+  useEffect(() => {
+    const match = window.location.pathname.match(/^\/c\/([^/]+)/);
+    if (!match) return;
+
+    const slug = decodeURIComponent(match[1]);
+    fetch(`/api/campaigns/${encodeURIComponent(slug)}`)
+      .then(async (response) => {
+        if (!response.ok) throw new Error('Campaign could not be loaded');
+        return response.json();
+      })
+      .then(({ campaign }) => {
+        const liveCampaign = toPrototypeCampaign(campaign);
+        setCampaigns([liveCampaign]);
+        setActiveCampaign(liveCampaign);
+        setIsLiveCampaign(true);
+        setIsAuthenticatedParticipant(false);
+      })
+      .catch((error) => console.error('[campaign] load failed', error));
+  }, []);
 
   // Listen to PWA Install Prompt and Standalone state
   useEffect(() => {
@@ -74,7 +97,43 @@ export function App() {
   }, [pwaTheme, activeCampaign.theme.primaryColor]);
 
   // Handler: Join Campaign (New Public Entrant)
-  const handleJoinCampaign = (name: string, email: string, referrerCode?: string) => {
+  const handleJoinCampaign = async (name: string, email: string, referrerCode?: string) => {
+    if (isLiveCampaign) {
+      try {
+        const response = await fetch(`/api/campaigns/${encodeURIComponent(activeCampaign.slug)}/join`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, email, referrerCode }),
+        });
+        if (!response.ok) throw new Error((await response.json()).error || 'Join failed');
+        const result = await response.json();
+        const liveSubscriber: Subscriber = {
+          id: result.subscriberId,
+          campaignId: activeCampaign.id,
+          name,
+          email,
+          referralCode: result.referralCode,
+          referredByCode: result.referredByCode,
+          totalEntries: activeCampaign.referralRewardEntries > 0 ? 1 : 0,
+          referralCount: 0,
+          completedActionIds: [],
+          unlockedMilestoneIds: [],
+          createdAt: new Date().toISOString(),
+          fraudRiskScore: 0,
+          fraudReasons: [],
+          status: 'active',
+        };
+        setCurrentParticipant(liveSubscriber);
+        setSubscribers([liveSubscriber]);
+        setIsAuthenticatedParticipant(true);
+        triggerHapticFeedback('success');
+      } catch (error) {
+        console.error('[campaign] join failed', error);
+        window.alert(error instanceof Error ? error.message : 'Unable to join this campaign.');
+      }
+      return;
+    }
+
     triggerHapticFeedback('success');
     const newReferralCode = name.replace(/[^a-zA-Z]/g, '').toUpperCase().slice(0, 5) + Math.floor(10 + Math.random() * 90);
     const initialReward = referrerCode ? (1 + activeCampaign.referralRewardEntries) : 1;
@@ -132,6 +191,28 @@ export function App() {
   // Handler: Complete Bonus Action
   const handleActionCompleted = (actionId: string, reward: number) => {
     if (currentParticipant.completedActionIds.includes(actionId)) return;
+
+    if (isLiveCampaign) {
+      setPendingActionIds((previous) => previous.includes(actionId) ? previous : [...previous, actionId]);
+      void fetch(`/api/campaigns/${encodeURIComponent(activeCampaign.slug)}/actions/${encodeURIComponent(actionId)}/complete`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ subscriberId: currentParticipant.id }),
+      })
+        .then(async (response) => {
+          if (!response.ok) throw new Error((await response.json()).error || 'Action could not be logged');
+          return response.json() as Promise<{ awarded: number; status: string }>;
+        })
+        .then(() => {
+          // Intent actions remain pending until an approved verifier confirms them.
+          triggerHapticFeedback('light');
+        })
+        .catch((error) => {
+          setPendingActionIds((previous) => previous.filter((id) => id !== actionId));
+          console.error('[campaign] action failed', error);
+        });
+      return;
+    }
 
     triggerHapticFeedback('success');
     const targetAction = activeCampaign.actions.find(a => a.id === actionId);
@@ -223,6 +304,7 @@ export function App() {
                 campaign={activeCampaign}
                 subscriber={currentParticipant}
                 allSubscribers={subscribers}
+                pendingActionIds={pendingActionIds}
                 onActionCompleted={handleActionCompleted}
                 onOpenRules={() => setShowRulesModal(true)}
               />

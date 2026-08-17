@@ -3,6 +3,7 @@ import dotenv from 'dotenv';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { GoogleGenAI, Type } from '@google/genai';
+import { completePublicAction, getPublicCampaign, joinPublicCampaign } from './server/teable.ts';
 
 dotenv.config();
 
@@ -13,6 +14,66 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 app.use(express.json());
+
+app.get('/api/health', (_req, res) => {
+  res.json({ ok: true, service: 'viral-sweepstakes' });
+});
+
+app.get('/api/campaigns/:slug', async (req, res) => {
+  try {
+    const campaign = await getPublicCampaign(req.params.slug);
+    if (!campaign) return res.status(404).json({ error: 'campaign not found' });
+    return res.json({ campaign });
+  } catch (error) {
+    console.error('Campaign read failed:', error);
+    return res.status(500).json({ error: 'campaign data unavailable' });
+  }
+});
+
+app.post('/api/campaigns/:slug/join', async (req, res) => {
+  try {
+    const { name, email, referrerCode } = req.body ?? {};
+    if (typeof name !== 'string' || !name.trim() || typeof email !== 'string' || !email.includes('@')) {
+      return res.status(400).json({ error: 'name and a valid email are required' });
+    }
+
+    const result = await joinPublicCampaign({
+      slug: req.params.slug,
+      name,
+      email,
+      referrerCode: typeof referrerCode === 'string' ? referrerCode : undefined,
+    });
+    if (result.kind === 'not_found') return res.status(404).json({ error: 'campaign not found' });
+    if (result.kind === 'inactive') return res.status(409).json({ error: 'campaign is not active' });
+    if (result.kind === 'duplicate') return res.status(409).json({ error: 'email already entered this campaign' });
+    return res.status(201).json(result);
+  } catch (error) {
+    console.error('Campaign join failed:', error);
+    return res.status(500).json({ error: 'campaign join unavailable' });
+  }
+});
+
+app.post('/api/campaigns/:slug/actions/:actionKey/complete', async (req, res) => {
+  try {
+    const { subscriberId } = req.body ?? {};
+    if (typeof subscriberId !== 'string' || !subscriberId) {
+      return res.status(400).json({ error: 'subscriberId is required' });
+    }
+
+    const result = await completePublicAction({
+      slug: req.params.slug,
+      actionKey: req.params.actionKey,
+      subscriberId,
+    });
+    if (result.kind === 'not_found') return res.status(404).json({ error: 'campaign not found' });
+    if (result.kind === 'subscriber_not_found') return res.status(404).json({ error: 'subscriber not found' });
+    if (result.kind === 'action_not_found') return res.status(404).json({ error: 'action not found' });
+    return res.status(201).json({ ok: true, awarded: result.awarded, status: result.status });
+  } catch (error) {
+    console.error('Campaign action failed:', error);
+    return res.status(500).json({ error: 'action completion unavailable' });
+  }
+});
 
 // Initialize Google GenAI on the server
 const ai = new GoogleGenAI({

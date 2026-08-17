@@ -70,6 +70,12 @@ export const AgencyDashboard: React.FC<AgencyDashboardProps> = ({
   const totalEntries = subscribers.reduce((sum, s) => sum + s.totalEntries, 0);
   const viralKFactor = (totalReferrals / (totalSubscribers || 1)).toFixed(2);
 
+  const csvCell = (value: unknown): string => {
+    let text = value == null ? '' : String(value);
+    if (/^[=+\-@\t\r]/.test(text)) text = `'${text}`;
+    return `"${text.replace(/"/g, '""')}"`;
+  };
+
   // Comprehensive CSV Export for Promoter
   const exportToCSV = (filterType: 'all' | 'active_only' | 'verified_only' = 'all') => {
     triggerHapticFeedback('success');
@@ -101,7 +107,7 @@ export const AgencyDashboard: React.FC<AgencyDashboardProps> = ({
 
     const rows = targetList.map(s => [
       s.id,
-      `"${s.name.replace(/"/g, '""')}"`,
+      s.name,
       s.email,
       s.referralCode,
       s.referredByCode || 'DIRECT_ORGANIC',
@@ -111,21 +117,22 @@ export const AgencyDashboard: React.FC<AgencyDashboardProps> = ({
       s.unlockedMilestoneIds.length,
       s.status.toUpperCase(),
       s.fraudRiskScore,
-      s.ipAddress || '192.168.1.1',
+      s.ipAddress || '',
       s.createdAt,
       campaign.id,
-      `"${campaign.title.replace(/"/g, '""')}"`
+      campaign.title
     ]);
 
-    const csvContent = 'data:text/csv;charset=utf-8,\uFEFF' + [headers.join(','), ...rows.map(r => r.join(','))].join('\r\n');
-    const encodedUri = encodeURI(csvContent);
+    const csvContent = '\uFEFF' + [headers.map(csvCell).join(','), ...rows.map(r => r.map(csvCell).join(','))].join('\r\n');
+    const blobUrl = URL.createObjectURL(new Blob([csvContent], { type: 'text/csv;charset=utf-8' }));
     const link = document.createElement('a');
-    link.setAttribute('href', encodedUri);
+    link.setAttribute('href', blobUrl);
     const dateStamp = new Date().toISOString().split('T')[0];
     link.setAttribute('download', `${campaign.slug}-contacts-export-${filterType}-${dateStamp}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+    URL.revokeObjectURL(blobUrl);
 
     setExportNotification(`Downloaded ${targetList.length} entrant contacts as CSV`);
     setTimeout(() => setExportNotification(null), 3500);
