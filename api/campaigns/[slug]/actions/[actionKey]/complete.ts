@@ -1,4 +1,4 @@
-import { completePublicAction } from '../../../../_lib/teable';
+import { completePublicAction } from '../../../../_lib/teable.js';
 
 type VercelRequest = {
   method?: string;
