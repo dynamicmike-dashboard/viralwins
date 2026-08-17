@@ -1,5 +1,3 @@
-import 'dotenv/config';
-
 type TeableRecord = {
   id: string;
   fields: Record<string, unknown>;
