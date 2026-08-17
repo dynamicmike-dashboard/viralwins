@@ -40,8 +40,9 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 
 async function getTableId(name: string): Promise<string> {
   if (!tableCache) {
-    const data = await request<{ tables?: TeableTable[] }>(`/base/${baseId}/table`);
-    tableCache = new Map((data.tables ?? []).map((table) => [table.name, table.id]));
+    const data = await request<TeableTable[] | { tables?: TeableTable[] }>(`/base/${baseId}/table`);
+    const tables = Array.isArray(data) ? data : data.tables ?? [];
+    tableCache = new Map(tables.map((table) => [table.name, table.id]));
   }
 
   const id = tableCache.get(name);
