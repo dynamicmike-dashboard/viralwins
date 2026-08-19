@@ -31,7 +31,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const promoter = paidPromoterEmail(req.headers);
     if (!promoter) return res.status(401).json({ error: 'promoter access required' });
 
-    const body = readJsonBody(req.body);
+    const body = await readJsonBody(req.body);
     const legalInput = typeof body.legalSettings === 'object' && body.legalSettings !== null
       ? body.legalSettings as Record<string, unknown>
       : {};

@@ -4,12 +4,12 @@ import { readJsonBody } from '../_lib/access.js';
 type VercelRequest = { method?: string; body?: unknown };
 type VercelResponse = { status(code: number): VercelResponse; json(body: unknown): void };
 
-export default function handler(req: VercelRequest, res: VercelResponse) {
+export default async function handler(req: VercelRequest, res: VercelResponse) {
   try {
     if (req.method !== 'POST') return res.status(405).json({ error: 'method not allowed' });
 
     // Short-lived signed token="email.expiry.sig" returned to the caller instead of emailed.
-    const body = readJsonBody(req.body);
+    const body = await readJsonBody(req.body);
     const email = typeof body.email === 'string' ? body.email.trim().toLowerCase() : '';
     if (!email.includes('@') || !process.env.AUTH_SECRET) return res.status(400).json({ error: 'invalid email' });
 
