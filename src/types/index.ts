@@ -58,6 +58,7 @@ export interface CampaignLegalSettings {
   customComplaintsInstructions?: string;
   promoterLegalDisclaimer?: string;
   promoterJurisdiction?: string;
+  platformNonLiabilityNotice?: string;
 }
 
 export interface Campaign {

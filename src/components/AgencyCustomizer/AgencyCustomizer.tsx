@@ -23,7 +23,8 @@ import {
   Mail,
   FileCode,
   ExternalLink,
-  Wand2
+  Wand2,
+  Copy
 } from 'lucide-react';
 import { Campaign, CampaignAction, CampaignMilestone, CampaignType, CampaignLegalSettings } from '../../types';
 import { DevicePreviewFrame, DeviceMode } from './DevicePreviewFrame';
@@ -121,7 +122,8 @@ export const AgencyCustomizer: React.FC<AgencyCustomizerProps> = ({
       customComplaintsEmail: `support@${campaign.slug.replace(/[^a-zA-Z0-9]/g, '') || 'promoter'}.com`,
       customComplaintsInstructions: '',
       promoterLegalDisclaimer: `${campaign.clientName} is solely responsible for prize fulfillment and campaign administration.`,
-      promoterJurisdiction: 'Delaware, United States'
+      promoterJurisdiction: 'Delaware, United States',
+      platformNonLiabilityNotice: `${campaign.clientName} operates this promotion independently. ViralWins is strictly a software technology provider and is not liable for any losses, unfulfilled prizes, or dispute outcomes.`
     };
 
     onUpdateCampaign({
@@ -182,6 +184,48 @@ export const AgencyCustomizer: React.FC<AgencyCustomizerProps> = ({
     handleCampaignFieldChange('milestones', campaign.milestones.filter(m => m.id !== id));
   };
 
+  // Duplicate campaign handler
+  const handleDuplicateCampaign = () => {
+    triggerHapticFeedback('medium');
+    const duplicated: Campaign = {
+      ...campaign,
+      id: `camp-${Date.now()}`,
+      slug: `${campaign.slug}-copy-${Date.now().toString(36)}`,
+      title: `${campaign.title} (Copy)`,
+      status: 'draft',
+      stats: { totalSubscribers: 0, totalReferrals: 0, totalActionsCompleted: 0, viralKFactor: 0, conversionRate: 0 },
+    };
+    onUpdateCampaign(duplicated);
+  };
+
+  // Save & publish the promoter's legal settings to the live campaign record.
+  const [legalSaveState, setLegalSaveState] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
+
+  const handleSaveLegalSettings = async () => {
+    setLegalSaveState('saving');
+    triggerHapticFeedback('medium');
+    try {
+      const response = await fetch(`/api/campaigns/${encodeURIComponent(campaign.slug)}/settings`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ legalSettings: campaign.legalSettings || {} }),
+      });
+      if (!response.ok) {
+        const result = await response.json().catch(() => ({}));
+        if (response.status === 401) throw new Error('Promoter sign-in required');
+        if (response.status === 404) throw new Error('Saved to this workspace — publish a live campaign to persist remotely');
+        throw new Error(result.error || 'Settings could not be saved');
+      }
+      setLegalSaveState('saved');
+      triggerHapticFeedback('success');
+      setTimeout(() => setLegalSaveState('idle'), 4000);
+    } catch (error) {
+      console.error('[customizer] legal save failed', error);
+      setLegalSaveState('error');
+      setTimeout(() => setLegalSaveState('idle'), 4000);
+    }
+  };
+
   const demoSubscriber = mockSubscribers[0];
   const legal = campaign.legalSettings || {
     useCustomPrivacyPolicy: false,
@@ -194,7 +238,8 @@ export const AgencyCustomizer: React.FC<AgencyCustomizerProps> = ({
     customComplaintsEmail: '',
     customComplaintsInstructions: '',
     promoterLegalDisclaimer: '',
-    promoterJurisdiction: ''
+    promoterJurisdiction: '',
+    platformNonLiabilityNotice: ''
   };
 
   return (
@@ -224,6 +269,15 @@ export const AgencyCustomizer: React.FC<AgencyCustomizerProps> = ({
             className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-2xl bg-gradient-to-r from-indigo-600 via-violet-600 to-indigo-700 text-white font-extrabold text-xs shadow-md shadow-indigo-600/20 hover:from-indigo-700 hover:to-violet-800 transition active:scale-95"
           >
             <Sparkles className="w-3.5 h-3.5" /> AI Campaign Strategist
+          </button>
+
+          {/* Duplicate Campaign */}
+          <button
+            onClick={handleDuplicateCampaign}
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs border border-slate-300 shadow-2xs transition active:scale-98"
+            title="Create a copy of this campaign as a new draft"
+          >
+            <Copy className="w-3.5 h-3.5" /> Duplicate Campaign
           </button>
 
           <div className="flex items-center p-1 bg-slate-100 border border-slate-200 rounded-2xl">
@@ -659,6 +713,28 @@ export const AgencyCustomizer: React.FC<AgencyCustomizerProps> = ({
                     <p className="text-amber-900 text-xs leading-relaxed">
                       As the campaign promoter / sponsor (<strong className="text-amber-950">{campaign.clientName}</strong>), you are solely responsible for prize fulfillment, tax compliance, and legal administration. <strong>ViralEngine Studio</strong> provides software infrastructure only and is held harmless from all entrant disputes.
                     </p>
+                    <div className="pt-1">
+                      <label className="text-[10px] text-slate-500 font-bold block mb-1">
+                        End-user footer non-liability notice (shown to entrants)
+                      </label>
+                      <textarea
+                        rows={3}
+                        placeholder="ViralWins is strictly a software technology provider..."
+                        value={legal.platformNonLiabilityNotice || ''}
+                        onChange={(e) => handleLegalChange('platformNonLiabilityNotice', e.target.value)}
+                        className="w-full bg-white border border-slate-300 rounded-xl p-3 text-xs text-slate-800 focus:outline-none focus:border-indigo-600 leading-relaxed resize-none"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => handleLegalChange(
+                          'platformNonLiabilityNotice',
+                          `${campaign.clientName} operates this promotion independently. ViralWins is strictly a software technology provider and is not liable for any losses, unfulfilled prizes, or dispute outcomes. Entrants must review the promoter's own terms and privacy policy.`
+                        )}
+                        className="text-[10px] text-slate-600 hover:text-indigo-600 font-bold inline-flex items-center gap-1"
+                      >
+                        <FileCode className="w-3 h-3" /> Load default non-liability wording
+                      </button>
+                    </div>
                   </div>
 
                   {/* Section 1: Terms & Conditions */}
@@ -936,6 +1012,30 @@ export const AgencyCustomizer: React.FC<AgencyCustomizerProps> = ({
                     </div>
                   </div>
 
+                  {/* Save & publish legal settings */}
+                  <div className="pt-4 border-t border-slate-200 flex items-center justify-end gap-2">
+                    <button
+                      onClick={handleSaveLegalSettings}
+                      disabled={legalSaveState === 'saving'}
+                      className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl text-sm font-black transition
+                        text-white shadow-lg animate-vw-gradient bg-gradient-to-r from-fuchsia-600 to-rose-500
+                        disabled:opacity-50 disabled:hover:scale-100"
+                    >
+                      {legalSaveState === 'saving' ? (
+                        <>Saving…</>
+                      ) : legalSaveState === 'saved' ? (
+                        <>Saved & published</>
+                      ) : legalSaveState === 'error' ? (
+                        <>Save failed — retry</>
+                      ) : (
+                        <>Save & publish legal settings</>
+                      )}
+                    </button>
+                    <span className="text-xs font-bold text-slate-500">
+                      {legalSaveState === 'saved' && 'Changes pushed to live campaign'}
+                      {legalSaveState === 'error' && 'Check console for details'}
+                    </span>
+                  </div>
                 </div>
               )}
 

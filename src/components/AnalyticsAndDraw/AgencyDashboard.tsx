@@ -20,7 +20,8 @@ import {
   FileSpreadsheet,
   Mail,
   Hash,
-  Wand2
+  Wand2,
+  Calendar
 } from 'lucide-react';
 import { Campaign, Subscriber, ActionLog, DrawAuditRecord } from '../../types';
 import { triggerHapticFeedback } from '../../utils/haptics';
@@ -71,6 +72,30 @@ export const AgencyDashboard: React.FC<AgencyDashboardProps> = ({
   const totalEntries = subscribers.reduce((sum, s) => sum + s.totalEntries, 0);
   const viralKFactor = (totalReferrals / (totalSubscribers || 1)).toFixed(2);
 
+  // Analytics date-range window (null = all time)
+  const [analyticsRange, setAnalyticsRange] = useState<null | 7 | 30 | 90>(null);
+  const rangeCutoff = analyticsRange ? Date.now() - analyticsRange * 86400000 : null;
+  const rangeSubscribers = rangeCutoff === null
+    ? subscribers
+    : subscribers.filter(s => new Date(s.createdAt).getTime() >= rangeCutoff);
+  const rangeSubscriberCount = rangeSubscribers.length;
+  const rangeReferrals = rangeSubscribers.reduce((sum, s) => sum + s.referralCount, 0);
+  const rangeEntries = rangeSubscribers.reduce((sum, s) => sum + s.totalEntries, 0);
+  const rangeFlagged = rangeSubscribers.filter(s => s.status === 'flagged' || s.status === 'disqualified').length;
+  const rangeKFactor = (rangeReferrals / (rangeSubscriberCount || 1)).toFixed(2);
+
+  // Daily signup series for the recent (sparkline)
+  const daily = (days: number) => {
+    const buckets: number[] = Array(days).fill(0);
+    for (const s of subscribers) {
+      const bucketIndex = Math.floor((Date.now() - new Date(s.createdAt).getTime()) / 86400000);
+      if (bucketIndex >= 0 && bucketIndex < days) buckets[bucketIndex]++;
+    }
+    return buckets.reverse();
+  };
+  const weeklySeries = daily(7);
+  const maxWeekly = Math.max(1, ...weeklySeries);
+
   const csvCell = (value: unknown): string => {
     let text = value == null ? '' : String(value);
     if (/^[=+\-@\t\r]/.test(text)) text = `'${text}`;
@@ -78,14 +103,23 @@ export const AgencyDashboard: React.FC<AgencyDashboardProps> = ({
   };
 
   // Comprehensive CSV Export for Promoter
-  const exportToCSV = (filterType: 'all' | 'active_only' | 'verified_only' = 'all') => {
+  type ExportFilter = 'all' | 'active_only' | 'verified_only' | 'flagged_only' | 'recent_7d' | 'recent_30d';
+
+  const exportToCSV = (filterType: ExportFilter = 'all') => {
     triggerHapticFeedback('success');
     
     let targetList = subscribers;
+    const now = Date.now();
     if (filterType === 'active_only') {
       targetList = subscribers.filter(s => s.status === 'active');
     } else if (filterType === 'verified_only') {
       targetList = subscribers.filter(s => s.status === 'active' && s.fraudRiskScore < 30);
+    } else if (filterType === 'flagged_only') {
+      targetList = subscribers.filter(s => s.status !== 'active');
+    } else if (filterType === 'recent_7d') {
+      targetList = subscribers.filter(s => new Date(s.createdAt).getTime() > now - 7 * 86400000);
+    } else if (filterType === 'recent_30d') {
+      targetList = subscribers.filter(s => new Date(s.createdAt).getTime() > now - 30 * 86400000);
     }
 
     const headers = [
@@ -191,6 +225,29 @@ export const AgencyDashboard: React.FC<AgencyDashboardProps> = ({
               <FileSpreadsheet className="w-4 h-4 text-indigo-600" />
               Download Entrants CSV ({subscribers.length})
             </button>
+            {/* Dropdown Menu */}
+            <div className="absolute right-0 top-full mt-2 hidden group-hover:block z-20 w-56">
+              <div className="bg-white rounded-xl border border-slate-200 shadow-lg overflow-hidden">
+                <button onClick={() => exportToCSV('all')} className="w-full px-4 py-2.5 text-left text-sm font-semibold text-indigo-900 hover:bg-indigo-50 border-b border-slate-100 flex items-center gap-2">
+                  <Filter className="w-4 h-4" /> All entrants ({subscribers.length})
+                </button>
+                <button onClick={() => exportToCSV('active_only')} className="w-full px-4 py-2.5 text-left text-sm font-semibold text-emerald-800 hover:bg-emerald-50 border-b border-slate-100 flex items-center gap-2">
+                  <CheckCircle className="w-4 h-4" /> Active only ({subscribers.filter(s => s.status === 'active').length})
+                </button>
+                <button onClick={() => exportToCSV('verified_only')} className="w-full px-4 py-2.5 text-left text-sm font-semibold text-sky-800 hover:bg-sky-50 border-b border-slate-100 flex items-center gap-2">
+                  <ShieldCheck className="w-4 h-4" /> Verified (fraud {'<'}30) ({subscribers.filter(s => s.status === 'active' && s.fraudRiskScore < 30).length})
+                </button>
+                <button onClick={() => exportToCSV('flagged_only')} className="w-full px-4 py-2.5 text-left text-sm font-semibold text-rose-800 hover:bg-rose-50 border-b border-slate-100 flex items-center gap-2">
+                  <ShieldAlert className="w-4 h-4" /> Flagged / Disqualified ({subscribers.filter(s => s.status !== 'active').length})
+                </button>
+                <button onClick={() => exportToCSV('recent_7d')} className="w-full px-4 py-2.5 text-left text-sm font-semibold text-amber-800 hover:bg-amber-50 border-b border-slate-100 flex items-center gap-2">
+                  <Clock className="w-4 h-4" /> Last 7 days ({subscribers.filter(s => new Date(s.createdAt) > new Date(Date.now() - 7*86400000)).length})
+                </button>
+                <button onClick={() => exportToCSV('recent_30d')} className="w-full px-4 py-2.5 text-left text-sm font-semibold text-violet-800 hover:bg-violet-50 flex items-center gap-2">
+                  <Calendar className="w-4 h-4" /> Last 30 days ({subscribers.filter(s => new Date(s.createdAt) > new Date(Date.now() - 30*86400000)).length})
+                </button>
+              </div>
+            </div>
           </div>
 
           <button
@@ -219,6 +276,43 @@ export const AgencyDashboard: React.FC<AgencyDashboardProps> = ({
       {/* 5-Metric Executive KPI Cards */}
       <EntrantUsageBanner slug={campaign.slug} />
 
+      {/* Analytics Date-Range Selector + Weekly Signup Sparkline */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white border border-slate-200/90 rounded-3xl p-5 shadow-xl shadow-slate-900/5">
+        <div className="flex items-center p-1 bg-slate-100 border border-slate-200 rounded-2xl">
+          {([null, 7, 30, 90] as const).map((days) => (
+            <button
+              key={String(days)}
+              onClick={() => {
+                triggerHapticFeedback('light');
+                setAnalyticsRange(days);
+              }}
+              className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition ${
+                analyticsRange === days ? 'bg-indigo-600 text-white shadow-xs' : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              {days === null ? 'All time' : `Last ${days}d`}
+            </button>
+          ))}
+          <span className="px-2 text-xs font-bold text-slate-400 hidden sm:block">
+            {rangeSubscriberCount.toLocaleString()} signups in window
+          </span>
+        </div>
+
+        <div className="flex items-center gap-3">
+          <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">Signups, last 7 days</span>
+          <div className="flex h-10 items-end gap-1">
+            {weeklySeries.map((count, index) => (
+              <div
+                key={index}
+                title={`${count} signup${count === 1 ? '' : 's'}`}
+                className="w-3 rounded-t bg-gradient-to-t from-indigo-600 to-indigo-300"
+                style={{ height: `${Math.max(8, (count / maxWeekly) * 100)}%` }}
+              />
+            ))}
+          </div>
+        </div>
+      </div>
+
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
         
         {/* Total Subscribers */}
@@ -229,9 +323,9 @@ export const AgencyDashboard: React.FC<AgencyDashboardProps> = ({
               <Users className="w-4 h-4" />
             </div>
           </div>
-          <p className="text-3xl font-black text-slate-900 font-mono">{totalSubscribers.toLocaleString()}</p>
+          <p className="text-3xl font-black text-slate-900 font-mono">{rangeSubscriberCount.toLocaleString()}</p>
           <div className="text-[11px] text-emerald-700 font-bold flex items-center gap-1">
-            <ArrowUpRight className="w-3.5 h-3.5" /> +28.4% this week
+            <ArrowUpRight className="w-3.5 h-3.5" /> {analyticsRange ? `+${rangeSubscriberCount} in window` : `${totalSubscribers.toLocaleString()} all-time`}
           </div>
         </div>
 
@@ -243,9 +337,9 @@ export const AgencyDashboard: React.FC<AgencyDashboardProps> = ({
               <TrendingUp className="w-4 h-4" />
             </div>
           </div>
-          <p className="text-3xl font-black text-slate-900 font-mono">{viralKFactor}x</p>
+          <p className="text-3xl font-black text-slate-900 font-mono">{rangeKFactor}x</p>
           <div className="text-[11px] text-slate-600 font-medium">
-            {totalReferrals.toLocaleString()} direct invites generated
+            {rangeReferrals.toLocaleString()} direct invites in window
           </div>
         </div>
 
@@ -257,7 +351,7 @@ export const AgencyDashboard: React.FC<AgencyDashboardProps> = ({
               <Flame className="w-4 h-4" />
             </div>
           </div>
-          <p className="text-3xl font-black text-slate-900 font-mono">{totalEntries.toLocaleString()}</p>
+          <p className="text-3xl font-black text-slate-900 font-mono">{rangeEntries.toLocaleString()}</p>
           <div className="text-[11px] text-slate-600 font-medium">
             Across {campaign.actions.length} action types
           </div>
@@ -285,13 +379,34 @@ export const AgencyDashboard: React.FC<AgencyDashboardProps> = ({
               <ShieldCheck className="w-4 h-4" />
             </div>
           </div>
-          <p className="text-3xl font-black text-slate-900 font-mono">{flaggedSubscribers}</p>
+          <p className="text-3xl font-black text-slate-900 font-mono">{analyticsRange ? rangeFlagged : flaggedSubscribers}</p>
           <div className="text-[11px] text-rose-700 font-bold flex items-center gap-1">
-            <ShieldAlert className="w-3.5 h-3.5" /> Blocked / Flagged bots
+            <ShieldAlert className="w-3.5 h-3.5" /> Blocked / Flagged {analyticsRange ? 'in window' : 'bots all-time'}
           </div>
         </div>
 
       </div>
+
+      {/* Empty Campaign State */}
+      {subscribers.length === 0 && (
+        <div className="rounded-3xl border-2 border-dashed border-slate-300 bg-white/60 p-10 text-center">
+          <div className="mx-auto mb-4 w-14 h-14 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center">
+            <Users className="w-7 h-7" />
+          </div>
+          <h3 className="text-lg font-extrabold text-slate-900">No entrants yet — let's change that</h3>
+          <p className="mx-auto max-w-md mt-2 text-sm text-slate-600 font-medium">
+            Your campaign is live. Share the entrant link, seed it with a couple of engaged friends, and watch the referral flywheel start.
+          </p>
+          <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
+            <a href={`/c/${campaign.slug}`} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold text-xs shadow-md shadow-indigo-600/25 transition active:scale-98">
+              <ExternalLink className="w-3.5 h-3.5" /> Open public entrant page
+            </a>
+            <button onClick={() => setActiveTab('draw_ledger')} className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs border border-slate-300 transition active:scale-98">
+              <Trophy className="w-3.5 h-3.5 text-amber-600" /> Preview draw ledger
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Main Operations Tabs & Ledger */}
       <div className="bg-white border border-slate-200/90 rounded-3xl overflow-hidden shadow-xl shadow-slate-900/5">

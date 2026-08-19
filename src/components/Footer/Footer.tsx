@@ -93,10 +93,16 @@ export const Footer: React.FC<FooterProps> = ({
             <AlertTriangle className="w-4 h-4" />
           </div>
           <div className="leading-relaxed">
-            <strong className="text-slate-900 font-bold">Technology Provider Separation Notice: </strong>
-            ViralEngine Studio is strictly the software infrastructure provider. 
-            This promotion is organized and sponsored independently by <strong className="text-slate-900">{campaign.clientName}</strong>. 
-            This platform is not liable for any losses, claims, or prize fulfillments. Entrants must inspect the specific terms and policies provided by the promoter.
+            {campaign.legalSettings?.platformNonLiabilityNotice ? (
+              <span>{campaign.legalSettings.platformNonLiabilityNotice}</span>
+            ) : (
+              <>
+                <strong className="text-slate-900 font-bold">Technology Provider Separation Notice: </strong>
+                ViralEngine Studio is strictly the software infrastructure provider.
+                This promotion is organized and sponsored independently by <strong className="text-slate-900">{campaign.clientName}</strong>.
+                This platform is not liable for any losses, claims, or prize fulfillments. Entrants must inspect the specific terms and policies provided by the promoter.
+              </>
+            )}
           </div>
         </div>
 
@@ -241,7 +247,7 @@ export const Footer: React.FC<FooterProps> = ({
                 <Database className="w-3.5 h-3.5 text-indigo-600" /> Offline Storage Engine: Active
               </li>
               <li className="flex items-center gap-1.5 text-slate-600">
-                <Layers className="w-3.5 h-3.5 text-emerald-600" /> Teable REST Backend Sync
+                <Layers className="w-3.5 h-3.5 text-emerald-600" /> Secure Cloud Data Sync
               </li>
             </ul>
           </div>

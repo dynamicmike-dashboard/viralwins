@@ -6,13 +6,38 @@ export function signatureFor(value: string): string {
   return createHmac('sha256', process.env.AUTH_SECRET ?? '').update(value).digest('base64url');
 }
 
-export function paidPromoterEmail(headers: Headers): string | null {
-  const cookieHeader = typeof headers.cookie === 'string' ? headers.cookie : '';
-  const raw = cookieHeader.split(';').map((item) => item.trim()).find((item) => item.startsWith('vw_paid_access='))?.slice('vw_paid_access='.length);
+function getCookie(headers: Headers, name: string): string | null {
+  const cookieHeader = headers.cookie;
+  const cookieString = Array.isArray(cookieHeader) ? cookieHeader.join('; ') : (typeof cookieHeader === 'string' ? cookieHeader : '');
+  const item = cookieString.split(';').map((part) => part.trim()).find((part) => part.startsWith(`${name}=`));
+  return item ? item.slice(name.length + 1) : null;
+}
+
+export function isValidSigned(raw: string): string | null {
   if (!raw || !process.env.AUTH_SECRET) return null;
   const [email, expiry, provided] = raw.split('.');
+  if (!email || !expiry || !provided) return null;
   const payload = `${email}.${expiry}`;
   const expected = signatureFor(payload);
-  const valid = Boolean(email && expiry && provided && Number(expiry) > Date.now() && provided.length === expected.length && timingSafeEqual(Buffer.from(provided), Buffer.from(expected)));
+  const valid = Number(expiry) > Date.now() && provided.length === expected.length && timingSafeEqual(Buffer.from(provided), Buffer.from(expected));
   return valid ? email : null;
+}
+
+export function paidPromoterEmail(headers: Headers): string | null {
+  return isValidSigned(getCookie(headers, 'vw_paid_access') ?? '');
+}
+
+export function promoterSessionEmail(headers: Headers): string | null {
+  return isValidSigned(getCookie(headers, 'vw_promoter_session') ?? '');
+}
+
+export const PROMOTER_SESSION_MAX_AGE_MS = 8 * 60 * 60 * 1000;
+
+export function promoterSessionCookie(email: string): string {
+  const payload = `${email}.${Date.now() + PROMOTER_SESSION_MAX_AGE_MS}`;
+  return `vw_promoter_session=${payload}.${signatureFor(payload)}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=${Math.floor(PROMOTER_SESSION_MAX_AGE_MS / 1000)}`;
+}
+
+export function clearPromoterSessionCookie(): string {
+  return 'vw_promoter_session=; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=0';
 }

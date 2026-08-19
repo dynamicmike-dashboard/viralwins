@@ -1,4 +1,4 @@
-import type { Campaign, CampaignAction } from '../types';
+import type { Campaign, CampaignAction, CampaignLegalSettings } from '../types';
 
 type PublicCampaign = {
   id: string;
@@ -12,7 +12,37 @@ type PublicCampaign = {
   referralEntries: number;
   prize: { title: string; description: string; value: string; drawsAt: string; winnerCount: number };
   actions: Array<Record<string, unknown>>;
+  legalSettings?: Record<string, unknown> | null;
 };
+
+const DEFAULT_NON_LIABILITY_NOTICE =
+  "ViralWins is strictly a software technology provider for this campaign. This promotion is organized and sponsored independently by the campaign promoter, who is solely responsible for prizes, eligibility, and legal compliance. ViralWins is not liable for any losses, claims, or prize fulfillment. Entrants must review the promoter's own terms and privacy policy.";
+
+function legalBoolean(value: unknown, fallback: boolean): boolean {
+  return typeof value === 'boolean' ? value : fallback;
+}
+
+function legalString(value: unknown, fallback = ''): string {
+  return typeof value === 'string' ? value : fallback;
+}
+
+function toLegalSettings(raw: Record<string, unknown> | null | undefined): CampaignLegalSettings | undefined {
+  if (!raw || typeof raw !== 'object') return undefined;
+  return {
+    useCustomPrivacyPolicy: legalBoolean(raw.useCustomPrivacyPolicy, false),
+    customPrivacyPolicyText: legalString(raw.customPrivacyPolicyText),
+    useCustomTermsConditions: legalBoolean(raw.useCustomTermsConditions, false),
+    customTermsConditionsText: legalString(raw.customTermsConditionsText),
+    useCustomOfficialRules: legalBoolean(raw.useCustomOfficialRules, false),
+    customOfficialRulesText: legalString(raw.customOfficialRulesText),
+    useCustomComplaintsPolicy: legalBoolean(raw.useCustomComplaintsPolicy, false),
+    customComplaintsEmail: legalString(raw.customComplaintsEmail),
+    customComplaintsInstructions: legalString(raw.customComplaintsInstructions),
+    promoterLegalDisclaimer: legalString(raw.promoterLegalDisclaimer),
+    promoterJurisdiction: legalString(raw.promoterJurisdiction),
+    platformNonLiabilityNotice: legalString(raw.platformNonLiabilityNotice, DEFAULT_NON_LIABILITY_NOTICE),
+  };
+}
 
 const emptyTheme: Campaign['theme'] = {
   primaryColor: '#0f766e',
@@ -66,6 +96,7 @@ export function toPrototypeCampaign(data: PublicCampaign): Campaign {
     })),
     milestones: [],
     officialRules: '',
+    legalSettings: toLegalSettings(data.legalSettings),
     status: data.status.toLowerCase() === 'active' ? 'active' : 'draft',
     stats: { totalSubscribers: 0, totalReferrals: 0, totalActionsCompleted: 0, viralKFactor: 0, conversionRate: 0 },
   };

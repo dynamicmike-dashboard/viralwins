@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { animate, motion, useInView } from 'motion/react';
-import { ArrowRight, BarChart3, Check, ChevronRight, FileSpreadsheet, Flame, Gauge, Gift, Globe, Megaphone, Rocket, Share2, ShieldCheck, Sparkles, Star, TrendingUp, Trophy, Users, Zap } from 'lucide-react';
+import { ArrowRight, BarChart3, Check, ChevronRight, FileSpreadsheet, Flame, Gauge, Gift, Globe, Megaphone, Rocket, Share2, ShieldCheck, Smartphone, Sparkles, Star, TrendingUp, Trophy, Users, Zap } from 'lucide-react';
+import { SalesFooter } from './SalesFooter';
 
 type Plan = {
   name: string;
@@ -38,7 +39,7 @@ const plans: Plan[] = [
     tagline: 'For sustained viral programmes.',
     priceDisplay: '$36/mo',
     priceNote: 'billed annually · or $42/mo monthly · up to 25,000 entrants',
-    features: ['Up to 25,000 monthly entrants', 'Unlimited campaigns', 'Everything in Growth', 'Advanced analytics and fraud review', 'Brand themes and custom domain', 'Teable data integration'],
+    features: ['Up to 25,000 monthly entrants', 'Unlimited campaigns', 'Everything in Growth', 'Advanced analytics and fraud review', 'Brand themes and custom domain', 'CSV export to any spreadsheet'],
     accent: 'from-violet-600 to-indigo-500',
     chip: 'bg-violet-100 text-violet-700',
   },
@@ -284,7 +285,7 @@ export function PromoterSalesPage({ onTestAccess }: { onTestAccess: (email: stri
                 { icon: ShieldCheck, color: 'from-emerald-400 to-teal-500', shadow: 'shadow-emerald-500/25', title: 'Responsible operations', desc: 'Verification, fraud review, official rules, and promoter ownership stay visible — so your campaign stays fair and your brand stays protected.' },
                 { icon: BarChart3, color: 'from-sky-400 to-indigo-500', shadow: 'shadow-sky-500/25', title: 'Decisions, not guesses', desc: 'Turn signups, referrals, points, and entries into clear growth data — with live analytics and one-click promoter exports.' },
                 { icon: Gauge, color: 'from-amber-400 to-orange-500', shadow: 'shadow-amber-500/25', title: 'No-surprise entrant caps', desc: 'We monitor your entrant volume in real time and auto-offer an upgrade as you approach your plan limit. You never stall mid-campaign.' },
-                { icon: Globe, color: 'from-violet-500 to-purple-600', shadow: 'shadow-violet-500/25', title: 'Your data, yours', desc: 'Every record lands in your Teable base, ready for export, marketing, or a custom brand theme and domain on higher plans.' },
+                { icon: Globe, color: 'from-violet-500 to-purple-600', shadow: 'shadow-violet-500/25', title: 'Your data, yours', desc: 'Every entrant, referral, and action belongs to you. Export clean CSV files for any spreadsheet or CRM, or go further with custom brand themes and domains on higher plans.' },
               ].map((feature, index) => (
                 <Reveal key={index} delay={index * 0.05}>
                   <div className="group h-full rounded-[2rem] border border-slate-200 bg-white p-7 shadow-sm transition-all duration-300 hover:-translate-y-1.5 hover:shadow-2xl hover:shadow-fuchsia-500/10">
@@ -297,6 +298,35 @@ export function PromoterSalesPage({ onTestAccess }: { onTestAccess: (email: stri
                 </Reveal>
               ))}
             </div>
+
+            {/* PROMOTER APP HIGHLIGHT CARD */}
+            <Reveal delay={0.3}>
+              <div className="mt-6 grid overflow-hidden rounded-[2rem] border-2 border-fuchsia-200 bg-white shadow-lg shadow-fuchsia-500/10 lg:grid-cols-3">
+                <div className="flex flex-col justify-center gap-4 bg-gradient-to-br from-fuchsia-500 via-rose-500 to-orange-400 p-8 text-white">
+                  <div className="inline-flex w-fit items-center gap-2 rounded-2xl bg-white/20 px-3 py-1.5 text-xs font-black uppercase tracking-widest backdrop-blur">
+                    <Smartphone className="h-4 w-4" /> On every plan
+                  </div>
+                  <h3 className="text-2xl font-black leading-tight sm:text-3xl">Run your whole campaign from the promoter app</h3>
+                  <p className="text-sm font-semibold leading-relaxed text-white/90">Launch, monitor, and scale your competitions from any phone, tablet, or laptop — no design or dev skills needed.</p>
+                </div>
+                <div className="grid gap-1.5 p-7 sm:grid-cols-2 lg:col-span-2">
+                  {[
+                    { icon: Rocket, label: 'One-click launch', desc: 'Go live in minutes from the dashboard.' },
+                    { icon: BarChart3, label: 'Live entrant analytics', desc: 'Watch signups, referrals, and entries in real time.' },
+                    { icon: Gauge, label: 'Cap monitoring', desc: 'See when you approach your plan limit with auto-upgrade offers.' },
+                    { icon: FileSpreadsheet, label: 'In-app CSV exports', desc: 'Pull your clean entrant list straight to a spreadsheet or CRM.' },
+                  ].map(({ icon: Icon, label, desc }) => (
+                    <div key={label} className="flex items-start gap-3 rounded-2xl bg-slate-50 p-4">
+                      <div className="rounded-xl bg-gradient-to-br from-orange-400 to-fuchsia-500 p-2.5 shadow-sm"><Icon className="h-4 w-4 text-white" /></div>
+                      <div>
+                        <p className="text-sm font-black">{label}</p>
+                        <p className="text-xs font-semibold text-slate-500">{desc}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </Reveal>
           </div>
         </section>
 
@@ -380,9 +410,7 @@ export function PromoterSalesPage({ onTestAccess }: { onTestAccess: (email: stri
         </section>
       </main>
 
-      <footer className="border-t-2 border-slate-200 px-6 py-10 text-center text-xs font-semibold text-slate-500">
-        ViralWins provides campaign infrastructure. Promoters remain responsible for their campaign terms, prizes, eligibility, and legal compliance. Prizes are promoter-funded — you grow with your own budget, not ad spend.
-      </footer>
+      <SalesFooter />
     </div>
   );
 }

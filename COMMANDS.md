@@ -2,6 +2,12 @@
 
 All tasks begin by reading `SYSTEM_PROTOCOL.md` and `PROJECT_MANIFEST.md`.
 
+## TASK: COMMIT & PUSH UNCOMMITTED WORK
+Read PROJECT_MANIFEST.md. Review `git diff`/`git status`. Commit the uncommitted bio-gen work (auth endpoints, sales footer, legal settings, campaign templates, duplicate campaign, filtered CSV export, analytics date-range + sparkline, empty state, dashboard loading gate). Ask the user before pushing to `viralwins`.
+
+## TASK: VERIFY TEST-ACCESS REVERT FIX
+Read PROJECT_MANIFEST.md. Confirm the `/dashboard` session gate returns `authorized: true` for `test@dynamicmike.com` in dev and Vercel preview. Verify `/api/access/test` sets the cookie and returns `testToken`, and `/api/access/session` validates it via the exported `isValidSigned`. The sales page must NOT flash before the check resolves (loading gate present). Report the result.
+
 ## TASK: VERIFY TEABLE DEPLOYMENT
 Check Vercel Production environment variable names without exposing values. Test `/api/health` and `/api/campaigns/<known-slug>`. Inspect Vercel logs. Do not change source until the environment issue is separated from schema issues.
 
@@ -25,6 +31,12 @@ Remove the Design Benchmark tab, navigation item, and presentation-only comparis
 
 ## TASK: STRIPE ACCESS GATE
 Build the sales page, Stripe Checkout session, verified webhook, promoter provisioning, and server-side dashboard entitlement checks. Never grant access from a client redirect alone.
+
+## TASK: EMAIL DELIVERY
+Wire SendGrid/Postmark for forgot-password reset links, welcome emails, and winner notices. Replace the raw reset-URL-in-JSON behavior in `api/auth/forgot`.
+
+## TASK: PROMPTER ONBOARDING WIZARD
+Build register → plan → Stripe → dashboard flow. Replace the temporary `/api/access/test` cookie entitlement with real `Plan_Tier`-driven entitlements.
 
 ## TASK: AUDITABLE DRAW
 Implement seed commitment, eligibility freeze, immutable entry snapshot, seed reveal, algorithm version, winning index, operator, redraw reason, and Draw_Winners audit record before using “provably fair”.

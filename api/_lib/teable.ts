@@ -291,7 +291,113 @@ export async function completePublicAction(input: {
   return { kind: 'logged' as const, awarded: 0, status: 'pending_verification' };
 }
 
-/** Safe public campaign data. Subscriber contact information never leaves this server function. */
+async function updateRecord(tableName: string, recordId: string, fields: Record<string, unknown>): Promise<void> {
+  const tableId = await getTableId(tableName);
+  await request(`/table/${tableId}/record`, {
+    method: 'PATCH',
+    body: JSON.stringify({ records: [{ id: recordId, fields }] }),
+  });
+}
+
+/**
+ * Persist a promoter's campaign legal settings onto the live Teable campaign record
+ * (stored as a single Legal_Settings_JSON long-text field on the Viral Referral Engine table).
+ */
+export async function saveCampaignLegalSettings(slug: string, legalSettings: Record<string, unknown>): Promise<boolean> {
+  const campaignRecords = await readAll('Viral Referral Engine');
+  const record = campaignRecords.find((item) => stringField(item.fields, 'Public_Slug') === slug);
+  if (!record) return false;
+  await updateRecord('Viral Referral Engine', record.id, {
+    Legal_Settings_JSON: JSON.stringify(legalSettings),
+  });
+  return true;
+}
+
+export type Promoter = {
+  id: string;
+  email: string;
+  name: string;
+  passwordHash: string;
+  accessStatus: string;
+  planTier: string;
+};
+
+function toPromoter(record: TeableRecord): Promoter {
+  return {
+    id: record.id,
+    email: stringField(record.fields, 'Email').toLowerCase(),
+    name: stringField(record.fields, 'Name'),
+    passwordHash: stringField(record.fields, 'Password_Hash'),
+    accessStatus: stringField(record.fields, 'Access_Status') || 'unpaid',
+    planTier: stringField(record.fields, 'Plan_Tier'),
+  };
+}
+
+export async function findPromoterByEmail(email: string): Promise<Promoter | null> {
+  const normalized = email.trim().toLowerCase();
+  if (!normalized) return null;
+  const records = await readAll('Promoters').catch(() => []);
+  const record = records.find((item) => stringField(item.fields, 'Email').toLowerCase() === normalized);
+  return record ? toPromoter(record) : null;
+}
+
+export async function createPromoter(input: { email: string; name: string; passwordHash: string; accessStatus: string; planTier?: string }) {
+  const tableId = await getTableId('Promoters');
+  const response = await request<{ records?: TeableRecord[] }>(`/table/${tableId}/record`, {
+    method: 'POST',
+    body: JSON.stringify({
+      records: [{
+        fields: {
+          Email: input.email.trim().toLowerCase(),
+          Name: input.name.trim(),
+          Password_Hash: input.passwordHash,
+          Access_Status: input.accessStatus,
+          Plan_Tier: input.planTier ?? null,
+          Created_At: Date.now(),
+        },
+      }],
+    }),
+  });
+  return response.records?.[0] ? toPromoter(response.records[0]) : null;
+}
+
+export async function setPromoterAccessStatus(recordId: string, accessStatus: string, planTier?: string): Promise<void> {
+  const fields: Record<string, unknown> = { Access_Status: accessStatus };
+  if (planTier !== undefined) fields.Plan_Tier = planTier;
+  await updateRecord('Promoters', recordId, fields);
+}
+
+export async function setPromoterPassword(recordId: string, passwordHash: string): Promise<void> {
+  await updateRecord('Promoters', recordId, { Password_Hash: passwordHash });
+}
+
+export async function setPromoterResetToken(email: string, token: string, expiresAt: number): Promise<boolean> {
+  const records = await readAll('Promoters').catch(() => []);
+  const record = records.find((item) => stringField(item.fields, 'Email').toLowerCase() === email.trim().toLowerCase());
+  if (!record) return false;
+  await updateRecord('Promoters', record.id, {
+    Password_Reset_Token: token,
+    Password_Reset_Expires: expiresAt,
+  });
+  return true;
+}
+
+export async function resetPromoterPassword(token: string, passwordHash: string): Promise<boolean> {
+  const records = await readAll('Promoters').catch(() => []);
+  const now = Date.now();
+  const record = records.find((item) =>
+    stringField(item.fields, 'Password_Reset_Token') === token &&
+    numberField(item.fields, 'Password_Reset_Expires') > now,
+  );
+  if (!record) return false;
+  await updateRecord('Promoters', record.id, {
+    Password_Hash: passwordHash,
+    Password_Reset_Token: null,
+    Password_Reset_Expires: null,
+  });
+  return true;
+}
+
 export async function getPublicCampaign(slug: string) {
   const campaignRecords = await readAll('Viral Referral Engine');
   const record = campaignRecords.find((item) => stringField(item.fields, 'Public_Slug') === slug);
@@ -303,6 +409,16 @@ export async function getPublicCampaign(slug: string) {
     readAll('Campaign_Actions').catch(() => []),
     readAll('Campaign_Form_Fields').catch(() => []),
   ]);
+
+  const legalJson = stringField(fields, 'Legal_Settings_JSON');
+  let legalSettings: Record<string, unknown> | null = null;
+  if (legalJson) {
+    try {
+      legalSettings = JSON.parse(legalJson);
+    } catch {
+      legalSettings = null;
+    }
+  }
 
   return {
     id: stringField(fields, 'Campaign_ID') || campaignId,
@@ -334,6 +450,7 @@ export async function getPublicCampaign(slug: string) {
     },
     instructions: stringField(fields, 'Participant_Instructions'),
     officialRules: stringField(fields, 'Official_Rules'),
+    legalSettings,
     actions: actionRecords
       .filter((item) => linkId(item.fields.Campaign) === campaignId && item.fields.Active !== false)
       .sort((a, b) => numberField(a.fields, 'Sort_Order') - numberField(b.fields, 'Sort_Order'))

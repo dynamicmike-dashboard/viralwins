@@ -256,6 +256,244 @@ export const mockCampaigns: Campaign[] = [
       viralKFactor: 2.25,
       conversionRate: 48.6
     }
+  },
+
+  // ============ CAMPAIGN TEMPLATES ============
+
+  // 1. LOCAL GYM / FITNESS STUDIO
+  {
+    id: "tmpl-gym-fitness",
+    slug: "gym-grand-opening",
+    title: "Grand Opening: Free Year of Fitness + PT Sessions",
+    headline: "Win 12 Months Free Membership + 12 Personal Training Sessions",
+    description: "Join our founding member giveaway! Share with workout buddies to boost your odds. New studio, top-tier equipment, zero commitment.",
+    clientName: "Iron Forge Fitness",
+    agencyName: "ViralScale Agency",
+    campaignType: "sweepstakes",
+    prizeTitle: "12-Month Unlimited Membership + 12 PT Sessions (worth $2,400)",
+    prizeDescription: "Full access to all classes, open gym, and 12 one-on-one sessions with a certified trainer. Transferable to a friend.",
+    prizeValueUsd: 2400,
+    prizeImageUrl: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&w=1200&q=80",
+    drawDate: "2026-10-15T23:59:59Z",
+    claimDeadlineDays: 7,
+    winnerCount: 1,
+    referralRewardEntries: 5,
+    showLeaderboard: true,
+    leaderboardCount: 10,
+    anonymizeLeaderboard: true,
+    theme: {
+      primaryColor: "#DC2626", // Red-600
+      accentColor: "#F59E0B",  // Amber
+      bgColor: "slate-950",
+      headlineFont: "Plus Jakarta Sans",
+      cardStyle: "glass",
+      borderRadius: "rounded-2xl",
+      bannerLayout: "hero_spotlight"
+    },
+    actions: [
+      { id: "act-wa", title: "Share on WhatsApp", platform: "whatsapp", reward: 3, description: "Invite gym buddies to join the founding member waitlist", verificationType: "instant_click", category: "social" },
+      { id: "act-tw", title: "Post on X / Twitter", platform: "twitter", reward: 3, description: "Share your founding member link with #IronForgeFitness", verificationType: "instant_click", category: "social" },
+      { id: "act-ig", title: "Share on Instagram Story", platform: "instagram", reward: 4, description: "Tag @ironforgefittness in your story", verificationType: "instant_click", category: "social" },
+      { id: "act-yt", title: "Watch 30-Sec Studio Tour", platform: "youtube", reward: 5, description: "Watch our virtual walkthrough (15s verification)", url: "https://youtube.com", verificationType: "timed_watch", timedSeconds: 15, category: "content" },
+      { id: "act-tg", title: "Join Member Telegram", platform: "telegram", reward: 4, description: "Get class schedules, nutrition tips, and bonus codes", url: "https://t.me/telegram", verificationType: "instant_click", category: "community" },
+      { id: "act-news", title: "Subscribe to Fit Weekly", platform: "newsletter", reward: 3, description: "Weekly workout plans and nutrition guides", url: "https://example.com/subscribe", verificationType: "instant_click", category: "content" }
+    ],
+    milestones: [
+      { id: "ms-1", title: "Founding Member Badge", requiredPoints: 5, rewardType: "badge", rewardValue: "Iron Forge Founder Badge", icon: "Award" },
+      { id: "ms-2", title: "Free Protein Shake", requiredPoints: 15, rewardType: "discount_code", rewardValue: "SHAKE-FREE-1", icon: "Coffee" },
+      { id: "ms-3", title: "Guest Pass for a Friend", requiredPoints: 30, rewardType: "physical_merch", rewardValue: "1-Week Guest Pass Card", icon: "UserPlus" },
+      { id: "ms-4", title: "PT Session Voucher", requiredPoints: 50, rewardType: "discount_code", rewardValue: "PT-SESSION-1HR", icon: "Dumbbell" }
+    ],
+    officialRules: "NO PURCHASE NECESSARY. Open to local residents 18+. Winner must redeem within 30 days. PT sessions schedule subject to trainer availability.",
+    legalSettings: {
+      useCustomPrivacyPolicy: false, customPrivacyPolicyText: "",
+      useCustomTermsConditions: false, customTermsConditionsText: "",
+      useCustomOfficialRules: false, customOfficialRulesText: "",
+      useCustomComplaintsPolicy: false, customComplaintsEmail: "hello@ironforgefittness.com",
+      customComplaintsInstructions: "Include your full name and registered email.",
+      promoterLegalDisclaimer: "Iron Forge Fitness is solely responsible for prize fulfillment and membership terms.",
+      promoterJurisdiction: "California, United States",
+      platformNonLiabilityNotice: "Iron Forge Fitness operates this promotion independently. ViralWins is strictly a software technology provider and is not liable for any losses, unfulfilled prizes, or dispute outcomes."
+    },
+    status: "active",
+    stats: { totalSubscribers: 0, totalReferrals: 0, totalActionsCompleted: 0, viralKFactor: 0, conversionRate: 0 }
+  },
+
+  // 2. SAAS WAITLIST / BETA LAUNCH
+  {
+    id: "tmpl-saas-beta",
+    slug: "saas-beta-waitlist",
+    title: "Skip the Queue: Lifetime Pro Access to FlowState",
+    headline: "Win Lifetime Pro Access to FlowState — AI Project Manager",
+    description: "FlowState auto-organizes your projects, writes status updates, and predicts bottlenecks. Join the beta waitlist, refer teammates, jump the queue.",
+    clientName: "FlowState Labs",
+    agencyName: "ViralScale Agency",
+    campaignType: "hybrid",
+    prizeTitle: "Lifetime Pro Plan (unlimited projects, team seats, AI credits)",
+    prizeDescription: "Permanent Pro tier for you + 5 team members. Includes 1M AI tokens/month, priority support, and early feature access.",
+    prizeValueUsd: 4800,
+    prizeImageUrl: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=1200&q=80",
+    drawDate: "2026-11-01T23:59:59Z",
+    claimDeadlineDays: 5,
+    winnerCount: 3,
+    referralRewardEntries: 10,
+    showLeaderboard: true,
+    leaderboardCount: 20,
+    anonymizeLeaderboard: true,
+    theme: {
+      primaryColor: "#0891B2", // Cyan-600
+      accentColor: "#10B981",  // Emerald
+      bgColor: "zinc-950",
+      headlineFont: "Syne",
+      cardStyle: "bordered",
+      borderRadius: "rounded-xl",
+      bannerLayout: "split_card"
+    },
+    actions: [
+      { id: "act-tw", title: "Tweet about FlowState", platform: "twitter", reward: 5, description: "Share your waitlist position with #FlowStateBeta", verificationType: "instant_click", category: "social" },
+      { id: "act-li", title: "Post on LinkedIn", platform: "linkedin", reward: 8, description: "Announce your early access to your professional network", verificationType: "instant_click", category: "social" },
+      { id: "act-dc", title: "Join Discord Community", platform: "discord", reward: 10, description: "Chat with founders, get beta invites, shape the roadmap", url: "https://discord.gg/flowstate", verificationType: "instant_click", category: "community" },
+      { id: "act-yt", title: "Watch 2-Min Demo", platform: "youtube", reward: 6, description: "See FlowState AI plan a sprint in real time", url: "https://youtube.com", verificationType: "timed_watch", timedSeconds: 20, category: "content" },
+      { id: "act-gh", title: "Star GitHub Repo", platform: "custom_link", reward: 4, description: "Star our public SDK repo", url: "https://github.com/flowstate", verificationType: "instant_click", category: "community" },
+      { id: "act-ref", title: "Refer a Dev Teammate", platform: "custom_link", reward: 15, description: "Each dev who joins adds 15 entries", verificationType: "instant_click", category: "referral" }
+    ],
+    milestones: [
+      { id: "ms-1", title: "Early Access Tier 1", requiredPoints: 10, rewardType: "badge", rewardValue: "Beta Pioneer Badge", icon: "Zap" },
+      { id: "ms-2", title: "100k AI Tokens Free", requiredPoints: 30, rewardType: "discount_code", rewardValue: "FLOWSTATE-100K", icon: "Cpu" },
+      { id: "ms-3", title: "Exclusive Swag Pack", requiredPoints: 60, rewardType: "physical_merch", rewardValue: "Hoodie + Stickers + Notebook", icon: "Package" },
+      { id: "ms-4", title: "Founder 1-on-1 Call", requiredPoints: 100, rewardType: "discount_code", rewardValue: "FOUNDER-CALL-30MIN", icon: "MessageSquare" }
+    ],
+    officialRules: "Open to developers, product managers, and founders 18+. Beta access subject to NDA. Lifetime plan non-transferable outside winning team.",
+    legalSettings: {
+      useCustomPrivacyPolicy: false, customPrivacyPolicyText: "",
+      useCustomTermsConditions: false, customTermsConditionsText: "",
+      useCustomOfficialRules: false, customOfficialRulesText: "",
+      useCustomComplaintsPolicy: false, customComplaintsEmail: "beta@flowstate.io",
+      customComplaintsInstructions: "Include your GitHub handle and registered email.",
+      promoterLegalDisclaimer: "FlowState Labs is solely responsible for beta access grants and AI token allocation.",
+      promoterJurisdiction: "Delaware, United States",
+      platformNonLiabilityNotice: "FlowState Labs operates this promotion independently. ViralWins is strictly a software technology provider and is not liable for any losses, unfulfilled prizes, or dispute outcomes."
+    },
+    status: "active",
+    stats: { totalSubscribers: 0, totalReferrals: 0, totalActionsCompleted: 0, viralKFactor: 0, conversionRate: 0 }
+  },
+
+  // 3. CONSUMER PRODUCT LAUNCH
+  {
+    id: "tmpl-product-launch",
+    slug: "product-launch-headphones",
+    title: "Be First: Win the Aurora Pro Wireless Headphones",
+    headline: "Win Aurora Pro — Audiophile Wireless Before Anyone Else",
+    description: "Our flagship headphones: planar magnetic drivers, 60hr battery, lossless codec. Join the launch list, share with audiophiles, win a pair free.",
+    clientName: "Aurora Audio",
+    agencyName: "ViralScale Agency",
+    campaignType: "sweepstakes",
+    prizeTitle: "Aurora Pro Wireless Headphones (MSRP $599)",
+    prizeDescription: "Planar magnetic drivers, aptX Adaptive / LDAC, 60-hour ANC on, custom EQ app. Ships worldwide free.",
+    prizeValueUsd: 599,
+    prizeImageUrl: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=1200&q=80",
+    drawDate: "2026-10-31T23:59:59Z",
+    claimDeadlineDays: 7,
+    winnerCount: 2,
+    referralRewardEntries: 5,
+    showLeaderboard: false,
+    leaderboardCount: 10,
+    anonymizeLeaderboard: true,
+    theme: {
+      primaryColor: "#7C3AED", // Violet-600
+      accentColor: "#F59E0B",  // Amber
+      bgColor: "neutral-950",
+      headlineFont: "Playfair Display",
+      cardStyle: "solid",
+      borderRadius: "rounded-3xl",
+      bannerLayout: "video_first"
+    },
+    actions: [
+      { id: "act-ig", title: "Instagram Reel/Story", platform: "instagram", reward: 5, description: "Show your current setup, tag @auroraaudio", verificationType: "instant_click", category: "social" },
+      { id: "act-yt", title: "Watch 60-Sec Sound Demo", platform: "youtube", reward: 8, description: "Hear the planar magnetic difference (20s)", url: "https://youtube.com", verificationType: "timed_watch", timedSeconds: 20, category: "content" },
+      { id: "act-tw", title: "Tweet Your Dream Setup", platform: "twitter", reward: 4, description: "Describe your ideal listening space with #AuroraPro", verificationType: "instant_click", category: "social" },
+      { id: "act-dc", title: "Join Audiophile Discord", platform: "discord", reward: 6, description: "Discuss specs, get early firmware access", url: "https://discord.gg/aurora", verificationType: "instant_click", category: "community" },
+      { id: "act-news", title: "Subscribe to Sound Journal", platform: "newsletter", reward: 5, description: "Monthly deep-dives on audio tech", url: "https://auroraaudio.substack.com", verificationType: "instant_click", category: "content" },
+      { id: "act-ref", title: "Refer a Fellow Audiophile", platform: "custom_link", reward: 10, description: "Each audiophile friend = 10 bonus entries", verificationType: "instant_click", category: "referral" }
+    ],
+    milestones: [
+      { id: "ms-1", title: "Early Bird Badge", requiredPoints: 8, rewardType: "badge", rewardValue: "Aurora Early Adopter", icon: "Headphones" },
+      { id: "ms-2", title: "15% Launch Discount", requiredPoints: 25, rewardType: "discount_code", rewardValue: "AURORA-LAUNCH-15", icon: "Tag" },
+      { id: "ms-3", title: "Premium Carrying Case", requiredPoints: 50, rewardType: "physical_merch", rewardValue: "Aurora Hard Case (worth $79)", icon: "Briefcase" },
+      { id: "ms-4", title: "Custom EQ Profile", requiredPoints: 80, rewardType: "digital_download", rewardValue: "Personalized EQ by Lead Engineer", icon: "Sliders" }
+    ],
+    officialRules: "NO PURCHASE NECESSARY. Open globally 18+. Winner receives headphones in retail packaging. Shipping included. Colors subject to availability.",
+    legalSettings: {
+      useCustomPrivacyPolicy: false, customPrivacyPolicyText: "",
+      useCustomTermsConditions: false, customTermsConditionsText: "",
+      useCustomOfficialRules: false, customOfficialRulesText: "",
+      useCustomComplaintsPolicy: false, customComplaintsEmail: "support@auroraaudio.com",
+      customComplaintsInstructions: "Include order reference or registered email.",
+      promoterLegalDisclaimer: "Aurora Audio is solely responsible for product shipping, warranty, and fulfillment.",
+      promoterJurisdiction: "New York, United States",
+      platformNonLiabilityNotice: "Aurora Audio operates this promotion independently. ViralWins is strictly a software technology provider and is not liable for any losses, unfulfilled prizes, or dispute outcomes."
+    },
+    status: "active",
+    stats: { totalSubscribers: 0, totalReferrals: 0, totalActionsCompleted: 0, viralKFactor: 0, conversionRate: 0 }
+  },
+
+  // 4. LOCAL CAFE / RESTAURANT
+  {
+    id: "tmpl-cafe-local",
+    slug: "cafe-grand-opening",
+    title: "Free Coffee for a Year + Private Tasting Dinner",
+    headline: "Win Free Coffee for a Year + Chef's Table for 6",
+    description: "New specialty café opening downtown. Join the founding circle, invite friends, win unlimited coffee + private dinner experience.",
+    clientName: "Bean & Beam Café",
+    agencyName: "ViralScale Agency",
+    campaignType: "sweepstakes",
+    prizeTitle: "365 Daily Drinks + Private Chef's Tasting Dinner for 6 (worth $1,800)",
+    prizeDescription: "One handcrafted drink per day for 12 months + exclusive after-hours tasting menu with head roaster and chef.",
+    prizeValueUsd: 1800,
+    prizeImageUrl: "https://images.unsplash.com/photo-1554118811-1e0d58224f24?auto=format&fit=crop&w=1200&q=80",
+    drawDate: "2026-10-20T23:59:59Z",
+    claimDeadlineDays: 7,
+    winnerCount: 1,
+    referralRewardEntries: 4,
+    showLeaderboard: true,
+    leaderboardCount: 10,
+    anonymizeLeaderboard: false,
+    theme: {
+      primaryColor: "#92400E", // Amber-800
+      accentColor: "#F59E0B",  // Amber
+      bgColor: "amber-50",
+      headlineFont: "Outfit",
+      cardStyle: "solid",
+      borderRadius: "rounded-2xl",
+      bannerLayout: "hero_spotlight"
+    },
+    actions: [
+      { id: "act-wa", title: "WhatsApp Group Invite", platform: "whatsapp", reward: 3, description: "Share with your coffee crew", verificationType: "instant_click", category: "social" },
+      { id: "act-ig", title: "Instagram Story Tag", platform: "instagram", reward: 4, description: "Tag @beanandbeamcafe showing your morning brew", verificationType: "instant_click", category: "social" },
+      { id: "act-tw", title: "Tweet Your Order", platform: "twitter", reward: 2, description: "What's your go-to drink? Tweet with #BeanAndBeam", verificationType: "instant_click", category: "social" },
+      { id: "act-maps", title: "Save on Google Maps", platform: "custom_link", reward: 5, description: "Save our location for opening week", url: "https://maps.google.com", verificationType: "instant_click", category: "community" },
+      { id: "act-news", title: "Join Bean Club Newsletter", platform: "newsletter", reward: 3, description: "Weekly roast notes, brew guides, secret menu", url: "https://beanandbeam.substack.com", verificationType: "instant_click", category: "content" },
+      { id: "act-ref", title: "Bring a Coffee Friend", platform: "custom_link", reward: 6, description: "Each friend who joins = 6 entries", verificationType: "instant_click", category: "referral" }
+    ],
+    milestones: [
+      { id: "ms-1", title: "Founding Bean Club", requiredPoints: 5, rewardType: "badge", rewardValue: "Founding Member Badge", icon: "Crown" },
+      { id: "ms-2", title: "Free Pastry with Drink", requiredPoints: 15, rewardType: "discount_code", rewardValue: "PASTRY-FREE-1", icon: "Cookie" },
+      { id: "ms-3", title: "Private Cupping Session", requiredPoints: 35, rewardType: "physical_merch", rewardValue: "Cupping for 2 with Head Roaster", icon: "Coffee" },
+      { id: "ms-4", title: "Chef's Table Deposit", requiredPoints: 60, rewardType: "discount_code", rewardValue: "CHEFS-TABLE-50OFF", icon: "UtensilsCrossed" }
+    ],
+    officialRules: "NO PURCHASE NECESSARY. Local residents 18+. Coffee redemption: 1 drink/day, non-transferable. Dinner date subject to availability.",
+    legalSettings: {
+      useCustomPrivacyPolicy: false, customPrivacyPolicyText: "",
+      useCustomTermsConditions: false, customTermsConditionsText: "",
+      useCustomOfficialRules: false, customOfficialRulesText: "",
+      useCustomComplaintsPolicy: false, customComplaintsEmail: "hello@beanandbeam.com",
+      customComplaintsInstructions: "Include your registered email and visit date if applicable.",
+      promoterLegalDisclaimer: "Bean & Beam Café is solely responsible for prize fulfillment, food safety, and dietary accommodations.",
+      promoterJurisdiction: "Texas, United States",
+      platformNonLiabilityNotice: "Bean & Beam Café operates this promotion independently. ViralWins is strictly a software technology provider and is not liable for any losses, unfulfilled prizes, or dispute outcomes."
+    },
+    status: "active",
+    stats: { totalSubscribers: 0, totalReferrals: 0, totalActionsCompleted: 0, viralKFactor: 0, conversionRate: 0 }
   }
 ];
 

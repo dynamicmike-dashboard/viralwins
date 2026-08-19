@@ -34,7 +34,10 @@ function App() {
 
   useEffect(() => {
     if (appPath !== '/dashboard') return;
-    fetch('/api/access/session')
+    const testToken = sessionStorage.getItem('vw_test_token');
+    const headers: Record<string, string> = {};
+    if (testToken) headers['x-vw-test-token'] = testToken;
+    fetch('/api/access/session', { credentials: 'include', headers })
       .then((response) => response.json())
       .then((result) => setPaidAccess(result.authorized === true))
       .catch(() => setPaidAccess(false))
@@ -45,14 +48,29 @@ function App() {
     const response = await fetch('/api/access/test', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
       body: JSON.stringify({ email }),
     });
     const result = await response.json();
     if (!response.ok) throw new Error(result.error || 'Access denied');
-    window.location.href = '/dashboard';
+    if (result.testToken) {
+      sessionStorage.setItem('vw_test_token', result.testToken);
+    }
+    window.location.assign('/dashboard');
   };
 
   const isSalesRoute = appPath === '/' || (appPath === '/dashboard' && !paidAccess && !paidAccessLoading);
+
+  if (appPath === '/dashboard' && paidAccessLoading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-[#FFF8EF]">
+        <div className="flex items-center gap-3 rounded-2xl bg-white px-6 py-4 text-sm font-bold text-slate-500 shadow-lg">
+          <span className="h-4 w-4 animate-spin rounded-full border-2 border-fuchsia-500 border-t-transparent" />
+          Checking dashboard access…
+        </div>
+      </div>
+    );
+  }
 
   if (isSalesRoute) {
     return <PromoterSalesPage onTestAccess={requestTestAccess} />;
