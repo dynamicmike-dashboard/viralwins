@@ -3,7 +3,7 @@
 ## STATUS
 - Current Goal: Replace the AI Studio prototype state with secure, live Teable-backed ViralWins campaign, promoter, participant, analytics, CSV, and payment workflows.
 - Last Session Date: 2026-08-17.
-- Latest commit: `8b19b5a` (`Vibrant sales page, 3-tier pricing, fix blank dashboard route`). **New auth/legal/quick-win work is UNCOMMITTED on the working tree.**
+- Latest commit: `2d877a0` (`Promoter auth gate, sales legal modals, and promoter app quick wins`) — **pushed to origin/main, Vercel auto-deploying**.
 - Repository: `https://github.com/dynamicmike-dashboard/viralwins.git`.
 - Production URL: `https://viralwins.vercel.app`.
 
@@ -40,8 +40,8 @@
 - **Quick wins (implemented)**: 4 campaign templates in `mockData.ts` (gym, SaaS beta, product launch, café); Duplicate Campaign button in customizer; filtered CSV export dropdown (All/Active/Verified/Flagged/Last-7d/Last-30d); analytics date-range picker (All/7d/30d/90d) with daily signup sparkline; dashboard empty state with "Open public entrant page" CTA.
 
 ## PENDING / NEXT
-- [x] UNCOMMITTED work to commit + push to `viralwins`: auth endpoints, sales footer, legal settings, campaign templates, duplicate campaign, filtered CSV export, analytics date-range + sparkline, empty state, dashboard loading gate.
-- [ ] **Re-verify the test-access revert end-to-end** (user still saw dashboard→sales-page flash in incognito before the latest fixes). Root causes fixed from last session: (a) `isValidSigned` imported but NOT exported → token fallback threw → sales page; (b) `Secure` cookie flag on HTTP localhost; (c) no loading gate → dashboard flashed. Confirm in dev/preview now that lint passes.
+- [x] Committed + pushed `2d877a0` to `origin/main` — deployed to production.
+- [ ] **Verify test-access on PRODUCTION** (`viralwins.vercel.app`) once the Vercel deploy from `2d877a0` completes: enter `test@dynamicmike.com`, confirm the dashboard now stays (loading gate → StudioApp, no revert). This was the fix that was previously only local.
 - [ ] Map a promoter plan to each campaign in Teable (`Plan_Tier` + `Entrant_Cap`) — currently only the `new leaderboard test` campaign is Growth/2,500; everything else is Unlimited by design.
 - [ ] For exact hard-stop caps, add a per-campaign server lock or atomic reservation (read-then-create can overshoot under simultaneous joins).
 - [ ] Wire Stripe checkout and webhook so the temporary `/api/access/test` cookie becomes a real entitlement; entitlements should drive `Plan_Tier`.

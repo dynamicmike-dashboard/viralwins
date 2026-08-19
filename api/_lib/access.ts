@@ -41,3 +41,28 @@ export function promoterSessionCookie(email: string): string {
 export function clearPromoterSessionCookie(): string {
   return 'vw_promoter_session=; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=0';
 }
+
+/** Defensively read a JSON request body (handles object, string, or undefined). */
+export function readJsonBody(body: unknown): Record<string, unknown> {
+  if (!body) return {};
+  if (typeof body !== 'object') {
+    if (typeof body === 'string') {
+      try {
+        return JSON.parse(body) as Record<string, unknown>;
+      } catch {
+        return {};
+      }
+    }
+    return {};
+  }
+  return body as Record<string, unknown>;
+}
+
+/** Detect a secure (HTTPS) upstream request for cookie flags. */
+export function isSecureUpstream(headers: Record<string, string | string[] | undefined> | undefined): boolean {
+  try {
+    return Boolean(headers && (headers['x-forwarded-proto'] === 'https' || headers['x-forwarded-protocol'] === 'https'));
+  } catch {
+    return false;
+  }
+}
