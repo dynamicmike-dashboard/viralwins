@@ -147,7 +147,7 @@ export const ComplaintsModal: React.FC<ComplaintsModalProps> = ({
               </p>
               <p className="text-amber-800 leading-relaxed text-[11px]">
                 Complaints regarding entries, prize fulfillment, or eligibility are submitted directly to the campaign sponsor (<strong className="text-amber-950">{campaign.clientName}</strong>). 
-                <strong> ViralEngine Studio</strong> is an independent software technology provider and is <strong>not liable for any losses, unfulfilled prizes, or promoter dispute decisions</strong>.
+                <strong> ViralWins</strong> is an independent software technology provider and is <strong>not liable for any losses, unfulfilled prizes, or promoter dispute decisions</strong>.
               </p>
             </div>
           </div>
@@ -507,7 +507,7 @@ export const ComplaintsModal: React.FC<ComplaintsModalProps> = ({
                 <div className="p-3 rounded-xl bg-slate-50 border border-slate-200">
                   <strong className="text-slate-900 font-bold block mb-0.5">Tier 3: Platform Non-Liability</strong>
                   <p className="text-slate-600 text-[11px]">
-                    ViralEngine Studio operates exclusively as a technology software provider and assumes no financial or legal liability for the resolution or fulfillment of promoter prizes.
+                    ViralWins operates exclusively as a technology software provider and assumes no financial or legal liability for the resolution or fulfillment of promoter prizes.
                   </p>
                 </div>
               </div>

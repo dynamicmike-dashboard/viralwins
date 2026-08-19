@@ -1,11 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  Trophy, 
-  Sliders, 
-  BarChart3, 
-  Database, 
-  Sparkles, 
-  Flame, 
+import {
+  Trophy,
+  Sliders,
+  BarChart3,
+  Flame,
   Globe,
   Wifi,
   WifiOff,
@@ -15,7 +13,7 @@ import { Campaign } from '../types';
 import { PwaThemeMode, PwaThemeEngine } from './PWA/PwaThemeEngine';
 import { triggerHapticFeedback } from '../utils/haptics';
 
-export type ActiveTab = 'participant_hub' | 'agency_customizer' | 'operations_analytics' | 'teable_schema' | 'design_benchmark';
+export type ActiveTab = 'participant_hub' | 'agency_customizer' | 'operations_analytics';
 
 interface NavbarProps {
   activeTab: ActiveTab;
@@ -177,36 +175,6 @@ export const Navbar: React.FC<NavbarProps> = ({
               <BarChart3 className="w-3.5 h-3.5" />
               Analytics & Draw
             </button>
-
-            <button
-              onClick={() => {
-                triggerHapticFeedback('light');
-                setActiveTab('teable_schema');
-              }}
-              className={`flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all ${
-                activeTab === 'teable_schema'
-                  ? 'bg-white text-indigo-600 shadow-xs ring-1 ring-slate-200/80'
-                  : 'text-slate-600 hover:text-slate-900 hover:bg-white/50'
-              }`}
-            >
-              <Database className="w-3.5 h-3.5" />
-              Teable & APIs
-            </button>
-
-            <button
-              onClick={() => {
-                triggerHapticFeedback('light');
-                setActiveTab('design_benchmark');
-              }}
-              className={`flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all ${
-                activeTab === 'design_benchmark'
-                  ? 'bg-white text-indigo-600 shadow-xs ring-1 ring-slate-200/80'
-                  : 'text-slate-600 hover:text-slate-900 hover:bg-white/50'
-              }`}
-            >
-              <Sparkles className="w-3.5 h-3.5 text-amber-500" />
-              Benchmark
-            </button>
           </nav>
 
           {/* Quick Actions & Campaign Selector */}
@@ -291,28 +259,6 @@ export const Navbar: React.FC<NavbarProps> = ({
             }`}
           >
             Analytics & Draw
-          </button>
-          <button
-            onClick={() => {
-              triggerHapticFeedback('light');
-              setActiveTab('teable_schema');
-            }}
-            className={`whitespace-nowrap px-3 py-1 rounded-xl text-xs font-bold ${
-              activeTab === 'teable_schema' ? 'bg-indigo-600 text-white shadow-xs' : 'text-slate-700 bg-white border border-slate-200'
-            }`}
-          >
-            Teable & APIs
-          </button>
-          <button
-            onClick={() => {
-              triggerHapticFeedback('light');
-              setActiveTab('design_benchmark');
-            }}
-            className={`whitespace-nowrap px-3 py-1 rounded-xl text-xs font-bold ${
-              activeTab === 'design_benchmark' ? 'bg-indigo-600 text-white shadow-xs' : 'text-slate-700 bg-white border border-slate-200'
-            }`}
-          >
-            Benchmark
           </button>
         </div>
 

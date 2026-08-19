@@ -44,13 +44,13 @@ TERMS AND CONDITIONS & SWEEPSTAKES OPERATING AGREEMENT
 Campaign: ${campaign.title}
 Promoter / Sponsor: ${campaign.clientName}
 Administrator: ${campaign.agencyName}
-Technology Software Provider: ViralEngine Studio
+Technology Software Provider: ViralWins
 Effective Date: August 15, 2026
 ================================================================================
 
 *** CRITICAL DISCLAIMER & PLATFORM LIMITATION OF LIABILITY ***
-ViralEngine Studio operates strictly as an independent software technology provider.
-ViralEngine Studio is NOT the promoter, sponsor, or legal administrator of this campaign.
+ViralWins operates strictly as an independent software technology provider.
+ViralWins is NOT the promoter, sponsor, or legal administrator of this campaign.
 THE PLATFORM DISCLAIMS ALL LIABILITY FOR ANY DIRECT, INDIRECT, INCIDENTAL, CONSEQUENTIAL,
 OR PUNITIVE LOSSES, DAMAGES, UNFULFILLED PRIZES, PROMOTER INSOLVENCY, DISPUTE OUTCOMES,
 OR TECHNICAL INTERRUPTIONS ARISING FROM OR RELATED TO THIS CAMPAIGN.
@@ -155,7 +155,7 @@ Governing Law: ${promoterJurisdiction}
               </p>
               <p className="text-amber-800 leading-relaxed font-medium">
                 This campaign is organized, governed, and fulfilled exclusively by <strong className="text-amber-950">{campaign.clientName}</strong> (&ldquo;Promoter&rdquo;). 
-                <strong> ViralEngine Studio</strong> is strictly the software infrastructure provider. 
+                <strong> ViralWins</strong> is strictly the software infrastructure provider. 
                 The platform <strong>disclaims all liability for any losses, damages, prize fulfillment delays, or promoter non-performance</strong>. 
                 You enter into an agreement directly with the Promoter and should inspect all promoter terms carefully.
               </p>
@@ -210,7 +210,7 @@ Governing Law: ${promoterJurisdiction}
                   2. Role of the Platform Technology Provider
                 </h4>
                 <p className="text-slate-600">
-                  ViralEngine Studio provides software tooling for referral management, action verification, and entropy-based lottery drawings. 
+                  ViralWins provides software tooling for referral management, action verification, and entropy-based lottery drawings. 
                   The platform is <strong>not an employer, partner, insurer, or fiduciary of the Promoter ({campaign.clientName})</strong>. 
                   The platform does not guarantee the availability, quality, or delivery of prizes and is held harmless by participants from all disputes.
                 </p>

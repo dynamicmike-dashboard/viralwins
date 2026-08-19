@@ -26,12 +26,12 @@ OFFICIAL SWEEPSTAKES & CAMPAIGN RULES
 Campaign: ${campaign.title}
 Sponsor / Promoter: ${campaign.clientName}
 Administrator: ${campaign.agencyName}
-Technology Provider: ViralEngine Studio (Software Platform)
+Technology Provider: ViralWins (Software Platform)
 ================================================================================
 
 *** NOTICE ON PLATFORM NON-LIABILITY & SPONSOR IDENTITY ***
 This campaign is independently organized and operated by ${campaign.clientName}.
-ViralEngine Studio provides the technology platform only and is NOT liable for any losses,
+ViralWins provides the technology platform only and is NOT liable for any losses,
 claims, or unfulfilled promoter prizes. Entrants contract directly with the Sponsor.
 
 ${useCustom ? `--- SPONSOR CUSTOM OFFICIAL RULES ---
@@ -118,7 +118,7 @@ Governing Law: ${promoterJurisdiction}`}
           <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
           <p className="text-[11px] text-amber-900 leading-relaxed font-medium">
             <strong>Platform Notice:</strong> Sponsored independently by <strong className="text-amber-950">{campaign.clientName}</strong>. 
-            ViralEngine Studio is solely the software provider and is not liable for campaign execution or participant losses. Entrants must consult sponsor terms.
+            ViralWins is solely the software provider and is not liable for campaign execution or participant losses. Entrants must consult sponsor terms.
           </p>
         </div>
 

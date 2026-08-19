@@ -1,4 +1,4 @@
-export type CampaignType = 'sweepstakes' | 'milestone_points' | 'hybrid';
+export type CampaignType = 'sweepstakes' | 'milestone_points' | 'hybrid' | 'spin_wheel';
 
 export type ActionPlatform = 
   | 'whatsapp'
@@ -61,6 +61,21 @@ export interface CampaignLegalSettings {
   platformNonLiabilityNotice?: string;
 }
 
+export interface SpinWheelSegment {
+  id: string;
+  label: string;
+  color?: string;
+}
+
+export interface SpinWheelConfig {
+  title: string;
+  description: string;
+  backgroundImageUrl?: string;
+  segments: SpinWheelSegment[];
+  buttonLabel?: string;
+  resultMessage?: string;
+}
+
 export interface Campaign {
   id: string;
   slug: string;
@@ -86,6 +101,7 @@ export interface Campaign {
   milestones: CampaignMilestone[];
   officialRules: string;
   legalSettings?: CampaignLegalSettings;
+  spinWheel?: SpinWheelConfig;
   status: 'active' | 'draft' | 'ended' | 'drawing';
   stats: {
     totalSubscribers: number;

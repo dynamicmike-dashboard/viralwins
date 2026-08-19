@@ -98,7 +98,7 @@ export const Footer: React.FC<FooterProps> = ({
             ) : (
               <>
                 <strong className="text-slate-900 font-bold">Technology Provider Separation Notice: </strong>
-                ViralEngine Studio is strictly the software infrastructure provider.
+                ViralWins is strictly the software infrastructure provider.
                 This promotion is organized and sponsored independently by <strong className="text-slate-900">{campaign.clientName}</strong>.
                 This platform is not liable for any losses, claims, or prize fulfillments. Entrants must inspect the specific terms and policies provided by the promoter.
               </>
@@ -116,7 +116,7 @@ export const Footer: React.FC<FooterProps> = ({
                 <img src="/favicon.svg" alt="Logo" className="w-full h-full rounded-xl" />
               </div>
               <span className="font-black text-slate-900 text-sm tracking-tight">
-                ViralEngine Studio
+                ViralWins
               </span>
             </div>
             <p className="text-xs text-slate-600 font-medium leading-relaxed">

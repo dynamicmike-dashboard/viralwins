@@ -494,6 +494,77 @@ export const mockCampaigns: Campaign[] = [
     },
     status: "active",
     stats: { totalSubscribers: 0, totalReferrals: 0, totalActionsCompleted: 0, viralKFactor: 0, conversionRate: 0 }
+  },
+
+  // 5. SPIN THE WHEEL INSTANT WIN
+  {
+    id: "tmpl-spin-wheel",
+    slug: "spin-win-instant",
+    title: "Spin & Win Instant Prizes",
+    headline: "Spin the Wheel — Instant Discounts & Freebies",
+    description: "One free spin for every entrant. Land on discounts, freebies, or the grand prize. No purchase necessary!",
+    clientName: "Main Street Boutique",
+    agencyName: "ViralScale Agency",
+    campaignType: "spin_wheel",
+    prizeTitle: "Grand Prize: $250 Shopping Spree",
+    prizeDescription: "Land on the GRAND PRIZE slot to win a $250 in-store shopping spree. Everyone else wins a discount or freebie.",
+    prizeValueUsd: 250,
+    prizeImageUrl: "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?auto=format&fit=crop&w=1200&q=80",
+    drawDate: "2026-12-31T23:59:59Z",
+    claimDeadlineDays: 14,
+    winnerCount: 1,
+    referralRewardEntries: 3,
+    showLeaderboard: false,
+    leaderboardCount: 10,
+    anonymizeLeaderboard: true,
+    theme: {
+      primaryColor: "#EC4899", // Pink
+      accentColor: "#F59E0B",  // Amber
+      bgColor: "white",
+      headlineFont: "Outfit",
+      cardStyle: "solid",
+      borderRadius: "rounded-3xl",
+      bannerLayout: "hero_spotlight"
+    },
+    spinWheel: {
+      title: "Spin & Win Big!",
+      description: "One free spin for every entrant. Prizes change weekly — try your luck!",
+      backgroundImageUrl: "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?auto=format&fit=crop&w=1200&q=80",
+      buttonLabel: "SPIN TO WIN",
+      resultMessage: "You landed on",
+      segments: [
+        { id: "s1", label: "10% OFF" },
+        { id: "s2", label: "Free Shipping" },
+        { id: "s3", label: "Try Again" },
+        { id: "s4", label: "$5 Gift Card" },
+        { id: "s5", label: "20% OFF" },
+        { id: "s6", label: "Almost!" },
+        { id: "s7", label: "Free Tote Bag" },
+        { id: "s8", label: "GRAND PRIZE" }
+      ]
+    },
+    actions: [
+      { id: "act-wa", title: "Share on WhatsApp", platform: "whatsapp", reward: 3, description: "Send your spin link to friends for extra spins", verificationType: "instant_click", category: "social" },
+      { id: "act-ig", title: "Follow on Instagram", platform: "instagram", reward: 3, description: "Follow @mainstreetboutique for new prize drops", verificationType: "instant_click", category: "social" },
+      { id: "act-news", title: "Join VIP List", platform: "newsletter", reward: 4, description: "Weekly prize announcements + secret sales", url: "https://mainstreet.substack.com", verificationType: "instant_click", category: "content" }
+    ],
+    milestones: [
+      { id: "ms-1", title: "Extra Spin Token", requiredPoints: 5, rewardType: "bonus_tickets", rewardValue: "+1 Extra Spin", icon: "RotateCcw" },
+      { id: "ms-2", title: "VIP Early Access", requiredPoints: 15, rewardType: "badge", rewardValue: "Wheel VIP — early prize drops", icon: "Crown" }
+    ],
+    officialRules: "NO PURCHASE NECESSARY. Open 18+. One spin per entrant per day; referral bonus spins unlimited. Grand prize winner drawn from all entrants at campaign close.",
+    legalSettings: {
+      useCustomPrivacyPolicy: false, customPrivacyPolicyText: "",
+      useCustomTermsConditions: false, customTermsConditionsText: "",
+      useCustomOfficialRules: false, customOfficialRulesText: "",
+      useCustomComplaintsPolicy: false, customComplaintsEmail: "hello@mainstreetboutique.com",
+      customComplaintsInstructions: "Include your spin result and registered email.",
+      promoterLegalDisclaimer: "Main Street Boutique is solely responsible for all prize fulfillment and discount redemption.",
+      promoterJurisdiction: "Nevada, United States",
+      platformNonLiabilityNotice: "Main Street Boutique operates this promotion independently. ViralWins is strictly a software technology provider and is not liable for any losses, unfulfilled prizes, or dispute outcomes."
+    },
+    status: "active",
+    stats: { totalSubscribers: 0, totalReferrals: 0, totalActionsCompleted: 0, viralKFactor: 0, conversionRate: 0 }
   }
 ];
 

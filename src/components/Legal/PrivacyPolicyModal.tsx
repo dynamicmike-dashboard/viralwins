@@ -46,12 +46,12 @@ PRIVACY POLICY & DATA PROTECTION NOTICE
 Campaign: ${campaign.title}
 Promoter / Sponsor: ${campaign.clientName}
 Agency / Administrator: ${campaign.agencyName}
-Technology Platform: ViralEngine Studio (Software Provider)
+Technology Platform: ViralWins (Software Provider)
 Effective Date: August 15, 2026
 ================================================================================
 
 *** CRITICAL NOTICE ON PLATFORM NON-LIABILITY & INDEPENDENT PROMOTER ***
-ViralEngine Studio is strictly an independent software technology provider and data processor.
+ViralWins is strictly an independent software technology provider and data processor.
 The platform is NOT the promoter, sponsor, or administrator of this campaign.
 The platform accepts NO liability for any losses, damages, claims, promoter unresponsiveness,
 or data processing conducted by the Promoter outside the platform.
@@ -63,7 +63,7 @@ ${customPolicyText}
 
 1. DATA CONTROLLER & DATA PROCESSOR ROLES
 - Data Controller: ${campaign.clientName} (The Campaign Promoter).
-- Data Processor: ViralEngine Studio (The software platform infrastructure).
+- Data Processor: ViralWins (The software platform infrastructure).
 - The Promoter determines the purpose of participant engagement. The Platform securely processes entries and cryptographic fairness proofs on behalf of the Promoter.
 
 2. INFORMATION COLLECTED
@@ -156,7 +156,7 @@ Governing Region: ${promoterJurisdiction}
               </p>
               <p className="text-amber-800 leading-relaxed font-medium">
                 This promotion is independently operated and sponsored by <strong className="text-amber-950">{campaign.clientName}</strong> (&ldquo;Promoter&rdquo;). 
-                <strong> ViralEngine Studio</strong> is solely the technology software provider and data processor. 
+                <strong> ViralWins</strong> is solely the technology software provider and data processor. 
                 The platform is <strong>not liable for any losses, unfulfilled campaign rewards, promoter acts or omissions, or dispute outcomes</strong>. 
                 Entrants are required to check the specific legal terms and privacy disclosures directly with the Promoter.
               </p>
@@ -262,7 +262,7 @@ Governing Region: ${promoterJurisdiction}
                 </h4>
                 <p className="text-slate-600">
                   This promotion is independently organized and sponsored by <strong>{campaign.clientName}</strong> (the &ldquo;Promoter&rdquo; / &ldquo;Data Controller&rdquo;). 
-                  <strong> ViralEngine Studio</strong> provides the software engine and serves strictly as the &ldquo;Data Processor&rdquo;. 
+                  <strong> ViralWins</strong> provides the software engine and serves strictly as the &ldquo;Data Processor&rdquo;. 
                   The platform operates the technical mechanics of referral counting, fraud detection, and cryptographic entropy calculations.
                   The platform does not sell, market, or independently monetize participant contact records.
                 </p>
@@ -350,7 +350,7 @@ Governing Region: ${promoterJurisdiction}
         {/* Modal Footer */}
         <div className="p-4 sm:p-5 border-t border-slate-200 bg-slate-50 flex flex-col sm:flex-row items-center justify-between gap-3 shrink-0">
           <div className="text-[11px] text-slate-500 text-center sm:text-left">
-            Platform Technology Provider: <strong>ViralEngine Studio</strong> • Not liable for campaign losses
+            Platform Technology Provider: <strong>ViralWins</strong> • Not liable for campaign losses
           </div>
 
           <div className="flex items-center gap-2 w-full sm:w-auto">

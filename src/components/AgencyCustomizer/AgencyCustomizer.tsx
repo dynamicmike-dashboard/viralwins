@@ -24,9 +24,10 @@ import {
   FileCode,
   ExternalLink,
   Wand2,
-  Copy
+  Copy,
+  Disc3
 } from 'lucide-react';
-import { Campaign, CampaignAction, CampaignMilestone, CampaignType, CampaignLegalSettings } from '../../types';
+import { Campaign, CampaignAction, CampaignMilestone, CampaignType, CampaignLegalSettings, SpinWheelConfig } from '../../types';
 import { DevicePreviewFrame, DeviceMode } from './DevicePreviewFrame';
 import { ParticipantDashboard } from '../ParticipantHub/ParticipantDashboard';
 import { ParticipantLanding } from '../ParticipantHub/ParticipantLanding';
@@ -35,6 +36,8 @@ import { TermsConditionsModal } from '../Legal/TermsConditionsModal';
 import { ComplaintsModal } from '../Legal/ComplaintsModal';
 import { OfficialRulesModal } from '../ParticipantHub/OfficialRulesModal';
 import { AiCampaignGeneratorModal } from './AiCampaignGeneratorModal';
+import { SpinWheelEditor } from '../SpinWheel/SpinWheelEditor';
+import { SpinWheelWidget } from '../SpinWheel/SpinWheelWidget';
 import { mockSubscribers } from '../../data/mockData';
 import { triggerHapticFeedback } from '../../utils/haptics';
 
@@ -85,7 +88,7 @@ export const AgencyCustomizer: React.FC<AgencyCustomizerProps> = ({
   campaign,
   onUpdateCampaign
 }) => {
-  const [activeTab, setActiveTab] = useState<'theme' | 'prize' | 'actions' | 'milestones' | 'legal'>('theme');
+  const [activeTab, setActiveTab] = useState<'theme' | 'prize' | 'actions' | 'milestones' | 'wheel' | 'legal'>('theme');
   const [previewState, setPreviewState] = useState<'landing' | 'hub'>('hub');
   const [deviceMode, setDeviceMode] = useState<DeviceMode>('desktop');
 
@@ -108,6 +111,27 @@ export const AgencyCustomizer: React.FC<AgencyCustomizerProps> = ({
         [field]: value
       }
     });
+  };
+
+  const handleCampaignTypeChange = (type: CampaignType) => {
+    const patch: Partial<Campaign> = { campaignType: type };
+    if (type === 'spin_wheel' && !campaign.spinWheel) {
+      patch.spinWheel = {
+        title: 'Spin & Win Big!',
+        description: 'One free spin for every entrant. Prizes change weekly — try your luck!',
+        segments: [
+          { id: 's1', label: '10% OFF' },
+          { id: 's2', label: 'Free Shipping' },
+          { id: 's3', label: 'Try Again' },
+          { id: 's4', label: '$5 Gift Card' },
+          { id: 's5', label: '20% OFF' },
+          { id: 's6', label: 'Almost!' },
+        ],
+        buttonLabel: 'SPIN TO WIN',
+        resultMessage: 'You landed on',
+      };
+    }
+    onUpdateCampaign({ ...campaign, ...patch });
   };
 
   const handleLegalChange = <K extends keyof CampaignLegalSettings>(field: K, value: CampaignLegalSettings[K]) => {
@@ -367,6 +391,18 @@ export const AgencyCustomizer: React.FC<AgencyCustomizerProps> = ({
               <button
                 onClick={() => {
                   triggerHapticFeedback('light');
+                  setActiveTab('wheel');
+                }}
+                className={`flex-1 py-2 px-2 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 whitespace-nowrap transition ${
+                  activeTab === 'wheel' ? 'bg-white text-indigo-600 shadow-xs ring-1 ring-slate-200' : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                <Disc3 className="w-3.5 h-3.5" /> Wheel
+              </button>
+
+              <button
+                onClick={() => {
+                  triggerHapticFeedback('light');
                   setActiveTab('legal');
                 }}
                 className={`flex-1 py-2 px-2 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 whitespace-nowrap transition ${
@@ -462,7 +498,34 @@ export const AgencyCustomizer: React.FC<AgencyCustomizerProps> = ({
               {/* TAB 2: PRIZE & DRAW LOGISTICS */}
               {activeTab === 'prize' && (
                 <div className="space-y-4 animate-in fade-in duration-150">
-                  
+
+                  {/* Campaign Type Selector */}
+                  <div className="space-y-3 bg-slate-50 p-4 rounded-2xl border border-slate-200">
+                    <label className="text-xs font-extrabold uppercase tracking-wider text-slate-800">Campaign Style</label>
+                    <div className="grid grid-cols-2 gap-2 text-xs">
+                      {([
+                        { value: 'sweepstakes', label: 'Sweepstakes', hint: 'Entries & referral draw' },
+                        { value: 'milestone_points', label: 'Points Milestones', hint: 'Earn & unlock tiers' },
+                        { value: 'hybrid', label: 'Hybrid', hint: 'Entries + milestones' },
+                        { value: 'spin_wheel', label: 'Spin the Wheel', hint: 'Gamified instant win' },
+                      ] as { value: CampaignType; label: string; hint: string }[]).map((opt) => (
+                        <button
+                          key={opt.value}
+                          type="button"
+                          onClick={() => handleCampaignTypeChange(opt.value)}
+                          className={`p-2.5 rounded-xl border text-left font-bold transition ${
+                            campaign.campaignType === opt.value
+                              ? 'border-indigo-600 bg-indigo-600 text-white shadow-md shadow-indigo-600/25'
+                              : 'border-slate-200 bg-white hover:border-indigo-400 text-slate-700'
+                          }`}
+                        >
+                          <span className="block">{opt.label}</span>
+                          <span className={`block text-[10px] font-semibold mt-0.5 ${campaign.campaignType === opt.value ? 'text-white/75' : 'text-slate-400'}`}>{opt.hint}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
                   <div className="space-y-3">
                     <div>
                       <label className="text-xs font-bold text-slate-800 block mb-1">Grand Prize Headline Title</label>
@@ -700,6 +763,21 @@ export const AgencyCustomizer: React.FC<AgencyCustomizerProps> = ({
                 </div>
               )}
 
+              {/* TAB: SPIN WHEEL */}
+              {activeTab === 'wheel' && (
+                <div className="space-y-4 animate-in fade-in duration-150">
+                  {campaign.campaignType !== 'spin_wheel' && (
+                    <div className="p-3.5 rounded-2xl bg-indigo-50 border border-indigo-200 text-indigo-900 text-xs font-semibold leading-relaxed">
+                      The spin wheel works alongside any campaign style. Set the campaign style to <strong>Spin the Wheel</strong> on the Prize tab to make it the primary experience.
+                    </div>
+                  )}
+                  <SpinWheelEditor
+                    config={campaign.spinWheel || { title: campaign.title, description: '', segments: [] }}
+                    onChange={(spinWheel) => onUpdateCampaign({ ...campaign, spinWheel })}
+                  />
+                </div>
+              )}
+
               {/* TAB 5: LEGAL, PRIVACY, T&C AND COMPLIANCE */}
               {activeTab === 'legal' && (
                 <div className="space-y-6 animate-in fade-in duration-150">
@@ -711,7 +789,7 @@ export const AgencyCustomizer: React.FC<AgencyCustomizerProps> = ({
                       Platform Non-Liability & Promoter Governance
                     </div>
                     <p className="text-amber-900 text-xs leading-relaxed">
-                      As the campaign promoter / sponsor (<strong className="text-amber-950">{campaign.clientName}</strong>), you are solely responsible for prize fulfillment, tax compliance, and legal administration. <strong>ViralEngine Studio</strong> provides software infrastructure only and is held harmless from all entrant disputes.
+                      As the campaign promoter / sponsor (<strong className="text-amber-950">{campaign.clientName}</strong>), you are solely responsible for prize fulfillment, tax compliance, and legal administration. <strong>ViralWins</strong> provides software infrastructure only and is held harmless from all entrant disputes.
                     </p>
                     <div className="pt-1">
                       <label className="text-[10px] text-slate-500 font-bold block mb-1">
@@ -791,7 +869,7 @@ export const AgencyCustomizer: React.FC<AgencyCustomizerProps> = ({
                           type="button"
                           onClick={() => {
                             triggerHapticFeedback('light');
-                            handleLegalChange('customTermsConditionsText', `1. SPONSORSHIP: Operated solely by ${campaign.clientName}.\n2. NO PURCHASE NECESSARY: Void where prohibited.\n3. PRIZE: ${campaign.prizeTitle} (ARV $${campaign.prizeValueUsd}).\n4. DRAW: Conducted on ${campaign.drawDate}.\n5. PLATFORM DISCLAIMER: ViralEngine Studio is an independent software provider with no liability.`);
+                            handleLegalChange('customTermsConditionsText', `1. SPONSORSHIP: Operated solely by ${campaign.clientName}.\n2. NO PURCHASE NECESSARY: Void where prohibited.\n3. PRIZE: ${campaign.prizeTitle} (ARV $${campaign.prizeValueUsd}).\n4. DRAW: Conducted on ${campaign.drawDate}.\n5. PLATFORM DISCLAIMER: ViralWins is an independent software provider with no liability.`);
                           }}
                           className="text-[10px] text-slate-600 hover:text-indigo-600 font-bold inline-flex items-center gap-1"
                         >
@@ -855,7 +933,7 @@ export const AgencyCustomizer: React.FC<AgencyCustomizerProps> = ({
                           type="button"
                           onClick={() => {
                             triggerHapticFeedback('light');
-                            handleLegalChange('customPrivacyPolicyText', `DATA PRIVACY DISCLOSURE BY ${campaign.clientName.toUpperCase()}\nWe collect entrant emails strictly for prize notification and verified referral credits.\nParticipants may request complete data deletion at any time by contacting our privacy officer.\nPlatform Provider (ViralEngine) acts as data processor.`);
+                            handleLegalChange('customPrivacyPolicyText', `DATA PRIVACY DISCLOSURE BY ${campaign.clientName.toUpperCase()}\nWe collect entrant emails strictly for prize notification and verified referral credits.\nParticipants may request complete data deletion at any time by contacting our privacy officer.\nPlatform Provider (ViralWins) acts as data processor.`);
                           }}
                           className="text-[10px] text-slate-600 hover:text-indigo-600 font-bold inline-flex items-center gap-1"
                         >

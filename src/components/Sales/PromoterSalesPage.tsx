@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { animate, motion, useInView } from 'motion/react';
-import { ArrowRight, BarChart3, Check, ChevronRight, FileSpreadsheet, Flame, Gauge, Gift, Globe, Megaphone, Rocket, Share2, ShieldCheck, Smartphone, Sparkles, Star, TrendingUp, Trophy, Users, Zap } from 'lucide-react';
+import { ArrowRight, BarChart3, Check, ChevronRight, Disc3, FileSpreadsheet, Flame, Gauge, Gift, Globe, Megaphone, Rocket, Share2, ShieldCheck, Smartphone, Sparkles, Star, TrendingUp, Trophy, Users, Zap } from 'lucide-react';
 import { SalesFooter } from './SalesFooter';
 
 type Plan = {
@@ -281,6 +281,7 @@ export function PromoterSalesPage({ onTestAccess }: { onTestAccess: (email: stri
             <div className="mt-14 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {[
                 { icon: Share2, color: 'from-orange-400 to-rose-500', shadow: 'shadow-orange-500/25', title: 'Viral action hub', desc: 'Let entrants earn entries by referring friends, sharing, posting, subscribing, or watching. Every action throws your brand further into the local conversation.' },
+                { icon: Disc3, color: 'from-pink-500 to-fuchsia-500', shadow: 'shadow-fuchsia-500/25', title: 'Spin-the-wheel campaigns', desc: 'Launch gamified instant-win wheels with unlimited prizes, custom labels, background images, and branding. The single highest-converting campaign style.' },
                 { icon: TrendingUp, color: 'from-rose-500 to-fuchsia-500', shadow: 'shadow-fuchsia-500/25', title: 'Reach that compounds', desc: 'Each entrant is a potential customer who brings their friends. One prize can out-perform an entire month of ad spend — for the same price.' },
                 { icon: ShieldCheck, color: 'from-emerald-400 to-teal-500', shadow: 'shadow-emerald-500/25', title: 'Responsible operations', desc: 'Verification, fraud review, official rules, and promoter ownership stay visible — so your campaign stays fair and your brand stays protected.' },
                 { icon: BarChart3, color: 'from-sky-400 to-indigo-500', shadow: 'shadow-sky-500/25', title: 'Decisions, not guesses', desc: 'Turn signups, referrals, points, and entries into clear growth data — with live analytics and one-click promoter exports.' },

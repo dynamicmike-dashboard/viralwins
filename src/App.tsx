@@ -12,8 +12,6 @@ import { ParticipantDashboard } from './components/ParticipantHub/ParticipantDas
 import { AgencyCustomizer } from './components/AgencyCustomizer/AgencyCustomizer';
 import { AgencyDashboard } from './components/AnalyticsAndDraw/AgencyDashboard';
 import { FairDrawModal } from './components/AnalyticsAndDraw/FairDrawModal';
-import { TeableSchemaViewer } from './components/TeableIntegration/TeableSchemaViewer';
-import { DesignBenchmarkView } from './components/DesignBenchmark/DesignBenchmarkView';
 import { OfficialRulesModal } from './components/ParticipantHub/OfficialRulesModal';
 import { PrivacyPolicyModal } from './components/Legal/PrivacyPolicyModal';
 import { TermsConditionsModal } from './components/Legal/TermsConditionsModal';
@@ -26,6 +24,7 @@ import { triggerFireworks, triggerActionReward } from './utils/confetti';
 import { triggerHapticFeedback } from './utils/haptics';
 import { toPrototypeCampaign } from './utils/publicCampaign';
 import { PromoterSalesPage } from './components/Sales/PromoterSalesPage';
+import { SpinWheelWidget } from './components/SpinWheel/SpinWheelWidget';
 
 function App() {
   const [appPath] = useState(() => window.location.pathname);
@@ -343,7 +342,21 @@ function StudioApp({ defaultTab }: { defaultTab: ActiveTab }) {
         {/* VIEW 1: PUBLIC PARTICIPANT HUB */}
         {activeTab === 'participant_hub' && (
           <>
-            {!isAuthenticatedParticipant ? (
+            {activeCampaign.campaignType === 'spin_wheel' && activeCampaign.spinWheel ? (
+              <div className="space-y-8">
+                <SpinWheelWidget config={activeCampaign.spinWheel} />
+                {!isAuthenticatedParticipant && (
+                  <ParticipantLanding
+                    campaign={activeCampaign}
+                    referrerCode="ALEX77"
+                    onJoinSuccess={handleJoinCampaign}
+                    onOpenRules={() => setShowRulesModal(true)}
+                    onOpenPrivacy={() => setShowPrivacyModal(true)}
+                    onOpenTerms={() => setShowTermsModal(true)}
+                  />
+                )}
+              </div>
+            ) : !isAuthenticatedParticipant ? (
               <ParticipantLanding
                 campaign={activeCampaign}
                 referrerCode="ALEX77"
@@ -383,18 +396,6 @@ function StudioApp({ defaultTab }: { defaultTab: ActiveTab }) {
             onOpenDrawModal={() => setShowFairDrawModal(true)}
             onUpdateSubscriberStatus={handleUpdateSubscriberStatus}
           />
-        )}
-
-        {/* VIEW 4: TEABLE SCHEMA & API CONTRACTS */}
-        {activeTab === 'teable_schema' && (
-          <TeableSchemaViewer
-            campaign={activeCampaign}
-          />
-        )}
-
-        {/* VIEW 5: GOOGLE AI STUDIO VS STITCH BENCHMARK */}
-        {activeTab === 'design_benchmark' && (
-          <DesignBenchmarkView />
         )}
 
       </main>

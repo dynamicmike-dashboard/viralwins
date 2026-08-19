@@ -213,7 +213,7 @@ export const PwaInstallModal: React.FC<PwaInstallModalProps> = ({
                     </div>
                   </div>
                   <div>
-                    <h4 className="text-sm font-black text-slate-900">Viral Referral & Sweepstakes Studio</h4>
+                    <h4 className="text-sm font-black text-slate-900">ViralWins — Viral Giveaways & Referral Campaigns</h4>
                     <p className="text-xs text-slate-600 font-medium">
                       Instant launch from home screen • Full offline caching
                     </p>
@@ -484,8 +484,8 @@ export const PwaInstallModal: React.FC<PwaInstallModalProps> = ({
               </div>
               <pre className="bg-slate-900 p-4 rounded-2xl border border-slate-800 text-[11px] font-mono text-emerald-300 overflow-x-auto max-h-60">
 {JSON.stringify({
-  "name": "Viral Referral Engine & Sweepstakes Studio",
-  "short_name": "ViralEngine",
+  "name": "ViralWins — Viral Giveaways & Referral Campaigns",
+  "short_name": "ViralWins",
   "start_url": "/",
   "id": "/",
   "display": "standalone",

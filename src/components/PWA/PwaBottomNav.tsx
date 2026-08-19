@@ -1,9 +1,8 @@
 import React from 'react';
-import { 
-  Globe, 
-  Sliders, 
-  BarChart3, 
-  Sparkles, 
+import {
+  Globe,
+  Sliders,
+  BarChart3,
   Download
 } from 'lucide-react';
 import { ActiveTab } from '../Navbar';
@@ -38,11 +37,6 @@ export const PwaBottomNav: React.FC<PwaBottomNavProps> = ({
       id: 'operations_analytics',
       label: 'Draw & KPI',
       icon: <BarChart3 className="w-5 h-5" />
-    },
-    {
-      id: 'design_benchmark',
-      label: 'Benchmark',
-      icon: <Sparkles className="w-5 h-5" />
     }
   ];
 
