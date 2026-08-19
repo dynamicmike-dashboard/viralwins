@@ -23,7 +23,15 @@ export default function handler(req: VercelRequest, res: VercelResponse) {
     const cookie = `vw_paid_access=${payload}.${signature(payload)}; Path=/; HttpOnly; ${secure}SameSite=Lax; Max-Age=28800`;
     res.setHeader('Set-Cookie', cookie);
     const testToken = `${payload}.${signature(payload)}`;
-    return res.status(200).json({ ok: true, testToken });
+    return res.status(200).json({
+      ok: true,
+      testToken,
+      _debug: {
+        bodyType: typeof req.body,
+        bodyIsString: typeof req.body === 'string',
+        bodyValue: typeof req.body === 'string' ? req.body.slice(0, 120) : undefined,
+      },
+    });
   } catch (error) {
     console.error('Test access failed:', error);
     const message = error instanceof Error ? error.message : String(error);

@@ -116,12 +116,12 @@ export function PromoterSalesPage({ onTestAccess }: { onTestAccess: (email: stri
       </div>
 
       <header className="mx-auto flex max-w-7xl items-center justify-between px-6 py-5">
-        <div className="flex items-center gap-3">
+        <a href="/" className="flex items-center gap-3" aria-label="ViralWins home">
           <div className="animate-vw-gradient rounded-2xl bg-gradient-to-br from-orange-400 via-rose-500 to-fuchsia-500 p-2.5 shadow-lg shadow-rose-500/30">
             <Flame className="h-5 w-5 text-white" />
           </div>
           <strong className="text-2xl font-black tracking-tight">Viral<span className="text-fuchsia-600">Wins</span></strong>
-        </div>
+        </a>
         <nav className="hidden items-center gap-8 text-sm font-bold text-slate-600 sm:flex">
           <a href="#benefits" className="transition-colors hover:text-fuchsia-600">Why ViralWins</a>
           <a href="#pricing" className="transition-colors hover:text-fuchsia-600">Pricing</a>
