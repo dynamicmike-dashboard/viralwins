@@ -49,10 +49,12 @@ export function readJsonBody(body: unknown): Record<string, unknown> {
     if (typeof body === 'string') {
       try {
         return JSON.parse(body) as Record<string, unknown>;
-      } catch {
+      } catch (error) {
+        console.error('[readJsonBody] invalid JSON string:', JSON.stringify(body.slice(0, 200)), error instanceof Error ? error.message : error);
         return {};
       }
     }
+    console.error('[readJsonBody] non-object, non-string body type:', typeof body);
     return {};
   }
   return body as Record<string, unknown>;
