@@ -1,5 +1,5 @@
 import { createHmac } from 'node:crypto';
-import { readJsonBody, isSecureUpstream } from '../_lib/access.js';
+import { isSecureUpstream } from '../_lib/access.js';
 
 type VercelRequest = { method?: string; body?: unknown; headers?: Record<string, string | string[] | undefined> };
 type VercelResponse = { status(code: number): VercelResponse; setHeader(name: string, value: string): void; json(body: unknown): void };
@@ -10,31 +10,28 @@ function signature(value: string): string {
 
 export default function handler(req: VercelRequest, res: VercelResponse) {
   try {
-    if (req.method !== 'POST') return res.status(405).json({ error: 'method not allowed' });
-
-    const body = readJsonBody(req.body);
-    const email = typeof body.email === 'string' ? body.email.trim().toLowerCase() : '';
-    const allowed = (process.env.PAID_TEST_EMAIL ?? 'test@dynamicmike.com').trim().toLowerCase();
-    if (!process.env.AUTH_SECRET) return res.status(503).json({ error: 'test access is not configured' });
-    if (!email || email !== allowed) return res.status(403).json({ error: 'paid promoter access not found' });
-
-    const payload = `${email}.${Date.now() + 8 * 60 * 60 * 1000}`;
-    const secure = isSecureUpstream(req.headers) ? 'Secure; ' : '';
-    const cookie = `vw_paid_access=${payload}.${signature(payload)}; Path=/; HttpOnly; ${secure}SameSite=Lax; Max-Age=28800`;
-    res.setHeader('Set-Cookie', cookie);
-    const testToken = `${payload}.${signature(payload)}`;
+    const raw = req.body;
+    let rawValue = 'n/a';
+    let rawType = typeof raw;
+    if (rawType === 'string') {
+      rawValue = raw.slice(0, 200);
+    } else if (rawType === 'object' && raw !== null) {
+      try {
+        rawValue = JSON.stringify(raw).slice(0, 200);
+      } catch {
+        rawValue = '<unserializable>';
+      }
+    } else if (raw === undefined) {
+      rawValue = '<undefined>';
+      rawType = 'undefined';
+    }
     return res.status(200).json({
       ok: true,
-      testToken,
-      _debug: {
-        bodyType: typeof req.body,
-        bodyIsString: typeof req.body === 'string',
-        bodyValue: typeof req.body === 'string' ? req.body.slice(0, 120) : undefined,
-      },
+      method: req.method || '?',
+      debug: { bodyType: rawType, bodyValue: rawValue },
     });
   } catch (error) {
-    console.error('Test access failed:', error);
     const message = error instanceof Error ? error.message : String(error);
-    return res.status(500).json({ error: 'test access unavailable', message });
+    return res.status(200).json({ ok: true, debug: { caught: message } });
   }
 }
