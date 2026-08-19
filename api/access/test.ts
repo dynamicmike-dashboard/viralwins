@@ -26,6 +26,7 @@ export default function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(200).json({ ok: true, testToken });
   } catch (error) {
     console.error('Test access failed:', error);
-    return res.status(500).json({ error: 'test access unavailable' });
+    const message = error instanceof Error ? error.message : String(error);
+    return res.status(500).json({ error: 'test access unavailable', message });
   }
 }
