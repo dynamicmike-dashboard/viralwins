@@ -15,8 +15,11 @@ function getCookie(headers: Headers, name: string): string | null {
 
 export function isValidSigned(raw: string): string | null {
   if (!raw || !process.env.AUTH_SECRET) return null;
-  const [email, expiry, provided] = raw.split('.');
-  if (!email || !expiry || !provided) return null;
+  const parts = raw.split('.');
+  if (parts.length < 3) return null;
+  const provided = parts.pop()!;
+  const expiry = parts.pop()!;
+  const email = parts.join('.');
   const payload = `${email}.${expiry}`;
   const expected = signatureFor(payload);
   const valid = Number(expiry) > Date.now() && provided.length === expected.length && timingSafeEqual(Buffer.from(provided), Buffer.from(expected));
