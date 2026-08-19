@@ -8,7 +8,7 @@ type VercelResponse = { status(code: number): VercelResponse; json(body: unknown
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   try {
     if (req.method !== 'POST') return res.status(405).json({ error: 'method not allowed' });
-    const body = await readJsonBody(req.body);
+    const body = readJsonBody(req.body);
     const email = typeof body.email === 'string' ? body.email.trim().toLowerCase() : '';
     const password = typeof body.password === 'string' ? body.password : '';
     if (!email.includes('@') || !password) return res.status(400).json({ error: 'email and password are required' });

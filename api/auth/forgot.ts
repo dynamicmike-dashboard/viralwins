@@ -9,7 +9,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (req.method !== 'POST') return res.status(405).json({ error: 'method not allowed' });
 
     // Short-lived signed token="email.expiry.sig" returned to the caller instead of emailed.
-    const body = await readJsonBody(req.body);
+    const body = readJsonBody(req.body);
     const email = typeof body.email === 'string' ? body.email.trim().toLowerCase() : '';
     if (!email.includes('@') || !process.env.AUTH_SECRET) return res.status(400).json({ error: 'invalid email' });
 

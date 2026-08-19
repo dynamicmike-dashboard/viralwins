@@ -9,7 +9,7 @@ type VercelResponse = { status(code: number): VercelResponse; json(body: unknown
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   try {
     if (req.method !== 'POST') return res.status(405).json({ error: 'method not allowed' });
-    const body = await readJsonBody(req.body);
+    const body = readJsonBody(req.body);
     const token = typeof body.token === 'string' ? body.token : '';
     const password = typeof body.password === 'string' ? body.password : '';
     if (!token || password.length < 8) return res.status(400).json({ error: 'a reset token and a password of at least 8 characters are required' });

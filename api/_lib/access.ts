@@ -42,26 +42,14 @@ export function clearPromoterSessionCookie(): string {
   return 'vw_promoter_session=; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=0';
 }
 
-/** Defensively read a JSON request body (handles parsed object, string, or Buffer). */
-export async function readJsonBody(body: unknown): Promise<Record<string, unknown>> {
-  if (body === undefined || body === null) return {};
-  try {
-    // Buffer / Uint8Array — decode then parse.
-    if (Buffer.isBuffer(body) || body instanceof Uint8Array) {
-      const text = Buffer.from(body as Uint8Array).toString('utf8');
-      return text ? JSON.parse(text) as Record<string, unknown> : {};
-    }
-    // Plain object (Vercel parses application/json automatically) — use directly.
-    if (typeof body === 'object') return body as Record<string, unknown>;
-    // String — parse.
-    if (typeof body === 'string') {
-      const text = body.trim();
-      return text ? JSON.parse(text) as Record<string, unknown> : {};
-    }
-    return {};
-  } catch {
-    return {};
+/** Defensively read a JSON request body (handles parsed object or string). */
+export function readJsonBody(body: unknown): Record<string, unknown> {
+  if (!body) return {};
+  if (typeof body === 'object') return body as Record<string, unknown>;
+  if (typeof body === 'string') {
+    try { return JSON.parse(body) as Record<string, unknown>; } catch { return {}; }
   }
+  return {};
 }
 
 /** Detect a secure (HTTPS) upstream request for cookie flags. */
