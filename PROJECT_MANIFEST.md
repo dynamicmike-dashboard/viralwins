@@ -1,9 +1,9 @@
 # PROJECT MANIFEST
 
 ## STATUS
-- Current Goal: Replace the AI Studio prototype state with secure, live Teable-backed ViralWins campaign, promoter, participant, analytics, CSV, and payment workflows.
-- Last Session Date: 2026-08-17.
-- Latest commit: `2d877a0` (`Promoter auth gate, sales legal modals, and promoter app quick wins`) — **pushed to origin/main, Vercel auto-deploying**.
+- Current Goal: Resolve the `test@dynamicmike.com` dashboard-access failure on PRODUCTION — **RESOLVED** (see below). Then continue live Teable-backed ViralWins campaign/promoter/payment workflows + spinning wheel feature.
+- Last Session Date: 2026-08-17 (this session).
+- Latest commit: `d610932` (`Fix isValidSigned: split on last 2 dots, not all dots (emails contain dots)`) — pushed to origin/main.
 - Repository: `https://github.com/dynamicmike-dashboard/viralwins.git`.
 - Production URL: `https://viralwins.vercel.app`.
 
@@ -11,12 +11,18 @@
 - Frontend: Vite + React + Tailwind + Lucide + Motion.
 - API: Vercel serverless functions under `api/`; local Express compatibility remains in `server.ts`.
 - Backend: Teable base `bseGn6eb9JmnGXyH8WF` using server-only environment variables.
-- Visual prototype components are present, but the original mock data must not be treated as production data.
 - `GET /api/health` is live and returns 200.
-- Vercel environment variable names are configured, but the campaign endpoint last reported that `TEABLE_BASE_ID` and `TEABLE_API_TOKEN` were unavailable to the function. Recheck Production values before further debugging.
-- `npm run lint` passes.
-- `npm run build` passes; only the existing 500 KB bundle-size warning remains.
+- `npm run lint` passes; `npm run build` passes (only the existing 500 KB bundle-size warning).
 - AUTH_SECRET signing key in use by test + promoter session cookies; PAID_TEST_EMAIL falls back to `test@dynamicmike.com`.
+- SEO/title rebranded to "ViralWins" in index.html + manifest.webmanifest (was "Viral Referral Engine & Sweepstakes Studio" / "ViralEngine").
+- **GIT PUSH REMINDER**: local git credential helper uses the `realaicasa` PAT (denied for this repo). Push with the explicit dynamicmike-dashboard URL + PAT.
+
+### TEST-ACCESS BUG — RESOLVED
+**Root causes (both fixed):**
+1. **`isValidSigned` split bug** (`d610932`): the function used `raw.split('.')` which splits on ALL dots. Emails like `test@dynamicmike.com` contain dots, so the split produced `['test@dynamicmike', 'com', 'expiry', 'sig']` instead of `['test@dynamicmike.com', 'expiry', 'sig']`. The reconstructed payload never matched the signature, so the `x-vw-test-token` header fallback always failed → session returned `authorized:false` → dashboard reverted to sales page. **Fix**: split on the LAST two dots only (`parts.pop()` × 2), join the rest as the email.
+2. **PowerShell curl quoting artifact**: `-d "{\"email\":\"...\"}"` in PowerShell sends literal backslashes, corrupting the JSON body on the wire. The browser's `fetch` with `JSON.stringify()` sends clean JSON — so the app works in the browser even though curl tests failed. (Form-encoded bodies `-d "email=..."` work from PowerShell as a workaround for testing.)
+
+**Verified working**: POST `/api/access/test` with `email=test@dynamicmike.com` → returns `{ok:true, testToken}`. GET `/api/access/session` with `x-vw-test-token: <token>` → returns `{authorized:true, email:"test@dynamicmike.com"}`.
 
 ## IMPLEMENTED
 - Server Teable gateway under `api/_lib/teable.ts`.
@@ -40,12 +46,11 @@
 - **Quick wins (implemented)**: 4 campaign templates in `mockData.ts` (gym, SaaS beta, product launch, café); Duplicate Campaign button in customizer; filtered CSV export dropdown (All/Active/Verified/Flagged/Last-7d/Last-30d); analytics date-range picker (All/7d/30d/90d) with daily signup sparkline; dashboard empty state with "Open public entrant page" CTA.
 
 ## PENDING / NEXT
-- [x] Committed + pushed `2d877a0` to `origin/main` — deployed to production.
-- [ ] **Verify test-access on PRODUCTION** (`viralwins.vercel.app`) once the Vercel deploy from `2d877a0` completes: enter `test@dynamicmike.com`, confirm the dashboard now stays (loading gate → StudioApp, no revert). This was the fix that was previously only local.
-- [ ] Map a promoter plan to each campaign in Teable (`Plan_Tier` + `Entrant_Cap`) — currently only the `new leaderboard test` campaign is Growth/2,500; everything else is Unlimited by design.
-- [ ] For exact hard-stop caps, add a per-campaign server lock or atomic reservation (read-then-create can overshoot under simultaneous joins).
-- [ ] Wire Stripe checkout and webhook so the temporary `/api/access/test` cookie becomes a real entitlement; entitlements should drive `Plan_Tier`.
-- [ ] Email delivery (SendGrid/Postmark) for forgot-password reset links + winner notices (`api/auth/forgot` currently returns a raw reset URL in JSON).
+- [x] **TEST-ACCESS BUG RESOLVED** — `isValidSigned` split bug fixed (`d610932`); session now returns `authorized:true` for `test@dynamicmike.com`. User should verify in incognito at `viralwins.vercel.app`.
+- [ ] **Spinning wheel campaign style**: new optional campaign type where promoters can add unlimited names/prizes/labels, background image, title, description. Research provided by user (spin-the-wheel marketing examples). Scaffold the component + type + customizer tab.
+- [ ] Map a promoter plan to each campaign in Teable (`Plan_Tier` + `Entrant_Cap`).
+- [ ] Wire Stripe checkout and webhook so the temporary `/api/access/test` cookie becomes a real entitlement.
+- [ ] Email delivery (SendGrid/Postmark) for forgot-password reset links + winner notices.
 - [ ] Promoter onboarding wizard (register → plan → Stripe → dashboard) replacing the test cookie.
 - [ ] Teable schema lock: confirm `Legal_Settings_JSON` long-text field exists on `Viral Referral Engine`; add Promoters table indexes.
 - [ ] Remove all placeholder, mock, hallucinated, and sample campaign content.
